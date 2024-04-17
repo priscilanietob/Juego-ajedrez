@@ -1,8 +1,9 @@
 /*
 AJEDREZ
 layout inicial clases piezas
+PEON
 Arleth Berumen 37228
-16/4/24*/
+17/4/24*/
 
 #include <iostream>
 
@@ -24,12 +25,29 @@ public:
     char getTipo()const { return tipo; }
 
     //movimientos invalidos para cualquier pieza
-    bool dentroTablero(int col_inicial, int ren_inicial, int col_final, int ren_final) const{
-        if((0 < col_final < 8) && (0 < ren_final < 8)){
+    bool dentroTablero(int col_inicial, int ren_inicial, int col_final, int ren_final){
+        if(col_final > 0 && col_final <= 8 && ren_final > 0 && ren_final <= 8){
             return true;
+        } else {
+            cout << "Jugada invalida. Fuera del tablero." << endl;
+            return false;
         }
     }
 
+    bool isCheck(){
+        //revisar si esta en jaque
+        return false;
+    }
+
+    bool isCheckmate(){
+        //revisar si esta en jaque mate
+        return false;
+    }
+
+    void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final){
+        col_inicial = col_final;
+        ren_inicial = ren_final;
+    }
 
 };
 
@@ -41,30 +59,41 @@ class Peon : public Pieza{
 public:
     //constructor y destrutor
     Peon(char _color) :
-        Pieza(color, 'P'){}
+        Pieza(_color, 'P'){}
     ~Peon(){}
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
 
-        if(!dentroTablero(col_inicial, ren_inicial, col_final, ren_final)){
-            cout << "Jugada invalida." << endl; //implementacion preliminar de jugada invalida
-        }
+        //revisar que no este en jaque/mate y q se mueva dentro del tablero
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate())){
 
-        //jugadas posibles de un peon
+            //q se mueva solo uno hacia en frente
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == 'B') {
+                cout << "El peon blanco se movio una casilla hacia en frente." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
+            } else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == 'N') {
+                cout << "El peon negro se movio una casilla hacia en frente." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
 
-        //q se mueva solo uno hacia en frente
-        if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == 'B') {
-            //aqui se actualizaria su posicion en el tablero
+            //q avance dos casillas cuando esta en posicion inicial
+            } else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == 'B') {
+                cout << "El peon blanco se movio dos casillas hacia en frente." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
 
-        } else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == 'N') {
-            //posicion se actualiza
-
-        //q avance dos casillas cuando esta en posicion inicial
-        } else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == 'B') {
-            // posicion se actualiza
-
-        } else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == 'N') {
-            //actualizar posicion
+            } else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == 'N') {
+                cout << "El peon negro se movio dos casillas hacia en frente." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
+            } else {
+                cout << "Jugada invalida." << endl;
+            }
         }
     }
 };
@@ -133,6 +162,22 @@ public:
 
 int main()
 {
+    Peon peonBlancoPrueba('B');
+    Peon peonNegroPrueba('N');
+
+    //se mueve una casilla
+    peonBlancoPrueba.mover(1,5,1,6);
+    //se mueve dos casillas desde posicion inicial
+    peonNegroPrueba.mover(3,7,3,5);
+
+    //se intenta mover dos casillas despues de posicion inicial
+    peonBlancoPrueba.mover(1,6,1,8);
+    //se mueve fuera del tablero
+    peonBlancoPrueba.mover(1,8,1,9);
+
+
+
+
 
     return 0;
 }
