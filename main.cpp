@@ -1,6 +1,6 @@
 /*
 AJEDREZ
-added bishop movement functionality
+added rook movement functionality
 */
 
 #include <iostream>
@@ -56,6 +56,7 @@ public:
     }
 
 };
+
 
 /* COLUMNA = col
    RENGLON = ren */
@@ -139,6 +140,7 @@ public:
         int columnaDiff = col_final - col_inicial;
         int renglonDiff = ren_final - ren_inicial;
 
+
         //obetner valor absoluto para que los signos no afecten la igualdad
         if(renglonDiff<0){
             renglonDiff = renglonDiff*(-1);
@@ -167,18 +169,18 @@ public:
         Pieza(_color, Tipo::Torre){}
     ~Torre(){}
 
-    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas de la tore
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (condicion de la pieza) {
-                cout << "Mensaje de la pieza." << endl;
+            if (col_inicial == col_final || ren_inicial == ren_final) {
+                cout << "La torre se movio." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }*/
+    }
 };
 
 class Dama : public Pieza{
@@ -223,21 +225,20 @@ public:
     }*/
 };
 
+
+
 int main()
 {
-    Alfil alfilPrueba(Pieza::Blanca);
+    Torre torrePrueba(Pieza::Blanca);
 
-    //diagonal noreste
-    alfilPrueba.mover(4,4,5,5);
+    //vertical
+    torrePrueba.mover(1,1,1,8);
+    torrePrueba.mover(2,5,2,7);
 
-    //diagonal sureste
-    alfilPrueba.mover(3,5,5,3);
+    //horizontal
+    torrePrueba.mover(4,2,8,2);
+    torrePrueba.mover(1,3,2,3);
 
-    //diagonal suroeste
-    alfilPrueba.mover(7,5,4,2);
-
-    //diagonal noroeste
-    alfilPrueba.mover(8,3,4,7);
 
     return 0;
 }
