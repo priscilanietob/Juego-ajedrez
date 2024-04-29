@@ -1,9 +1,7 @@
 /*
 AJEDREZ
-layout inicial clases piezas
-PEON
-Arleth Berumen 37228
-17/4/24*/
+changed var types to enum
+*/
 
 #include <iostream>
 
@@ -12,11 +10,17 @@ using namespace std;
 //caracteristicas generales de todas las piezas
 class Pieza{
 protected:
-    char color; //B o N
-    char tipo; //por iniciales
+
+
 public:
+    enum Color{Blanca, Negra};
+    enum Tipo{Peon, Caballo, Alfil, Torre, Dama, Rey};
+
+    Color color;
+    Tipo tipo;
+
     //constructor y destructor
-    Pieza(char _color, char _tipo) :
+    Pieza(Color _color, Tipo _tipo) :
         color(_color), tipo(_tipo){}
     ~Pieza(){}
 
@@ -57,9 +61,9 @@ public:
 
 class Peon : public Pieza{
 public:
-    //constructor y destrutor
-    Peon(char _color) :
-        Pieza(_color, 'P'){}
+    //constructor y destructor
+    Peon(Color _color) :
+        Pieza(_color, Tipo::Peon){}
     ~Peon(){}
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
@@ -68,25 +72,25 @@ public:
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate())){
 
             //q se mueva solo uno hacia en frente
-            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == 'B') {
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
                 cout << "El peon blanco se movio una casilla hacia en frente." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
                     //codigo
-            } else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == 'N') {
+            } else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == Color::Negra) {
                 cout << "El peon negro se movio una casilla hacia en frente." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
                     //codigo
 
             //q avance dos casillas cuando esta en posicion inicial
-            } else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == 'B') {
+            } else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == Color::Blanca) {
                 cout << "El peon blanco se movio dos casillas hacia en frente." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
                     //codigo
 
-            } else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == 'N') {
+            } else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == Color::Negra) {
                 cout << "El peon negro se movio dos casillas hacia en frente." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
@@ -101,8 +105,8 @@ public:
 class Caballo : public Pieza{
 public:
     //constructor y destructor
-    Caballo(char _color) :
-        Pieza(color, 'C'){}
+    Caballo(Color _color) :
+        Pieza(_color, Tipo::Caballo){}
     ~Caballo(){}
 
     void mover(){
@@ -113,8 +117,8 @@ public:
 class Alfil : public Pieza{
 public:
     //constructor y destructor
-    Alfil(char _color) :
-        Pieza(color, 'A'){}
+    Alfil(Color _color) :
+        Pieza(_color, Tipo::Alfil){}
     ~Alfil(){}
 
     void mover(){
@@ -125,8 +129,8 @@ public:
 class Torre : public Pieza{
 public:
     //constructor y destructor
-    Torre(char _color) :
-        Pieza(color, 'T'){}
+    Torre(Color _color) :
+        Pieza(_color, Tipo::Torre){}
     ~Torre(){}
 
     void mover(){
@@ -137,8 +141,8 @@ public:
 class Dama : public Pieza{
 public:
     //constructor y destructor
-    Dama(char _color) :
-        Pieza(color, 'D'){}
+    Dama(Color _color) :
+        Pieza(_color, Tipo::Dama){}
     ~Dama(){}
 
     void mover(){
@@ -149,8 +153,8 @@ public:
 class Rey : public Pieza{
 public:
     //constructor y destructor
-    Rey(char _color) :
-        Pieza(color, 'R'){}
+    Rey(Color _color) :
+        Pieza(_color, Tipo::Rey){}
     ~Rey(){}
 
     void mover(){
@@ -162,8 +166,8 @@ public:
 
 int main()
 {
-    Peon peonBlancoPrueba('B');
-    Peon peonNegroPrueba('N');
+    Peon peonBlancoPrueba(Pieza::Blanca);
+    Peon peonNegroPrueba(Pieza::Negra);
 
     //se mueve una casilla
     peonBlancoPrueba.mover(1,5,1,6);
@@ -176,8 +180,6 @@ int main()
     peonBlancoPrueba.mover(1,8,1,9);
 
 
-
-
-
     return 0;
 }
+
