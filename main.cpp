@@ -1,6 +1,6 @@
 /*
 AJEDREZ
-changed var types to enum
+added knight movement functionality
 */
 
 #include <iostream>
@@ -10,7 +10,6 @@ using namespace std;
 //caracteristicas generales de todas las piezas
 class Pieza{
 protected:
-
 
 public:
     enum Color{Blanca, Negra};
@@ -48,13 +47,17 @@ public:
         return false;
     }
 
+    bool isSpaceOccupied(){
+        //checar si la casilla esta ocupada
+        return false;
+    }
+
     void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final){
         col_inicial = col_final;
         ren_inicial = ren_final;
     }
 
 };
-
 
 /* COLUMNA = col
    RENGLON = ren */
@@ -68,8 +71,8 @@ public:
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
 
-        //revisar que no este en jaque/mate y q se mueva dentro del tablero
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate())){
+        //revisar que no este en jaque/mate y q se mueva dentro del tablero Y q no este ocupada la casilla
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
 
             //q se mueva solo uno hacia en frente
             if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
@@ -109,8 +112,20 @@ public:
         Pieza(_color, Tipo::Caballo){}
     ~Caballo(){}
 
-    void mover(){
-        //reglas de movimiento especificas del caballo
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+            if ((col_final == col_inicial-1 || col_inicial+1) && (ren_final == ren_inicial + 2 || ren_final == ren_inicial - 2)) {
+                cout << "El caballo se movio hacia el norte o el sur." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+            } else if ((ren_final == ren_inicial-1 || ren_inicial+1) && (col_final == col_inicial + 2 || col_final == col_inicial - 2)) {
+                cout << "El caballo se movio al este u oeste." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+            } else {
+                cout << "Jugada invalida." << endl;
+            }
+        }
     }
 };
 
@@ -121,8 +136,18 @@ public:
         Pieza(_color, Tipo::Alfil){}
     ~Alfil(){}
 
-    void mover(){
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas del alfil
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                cout << "El caballo blanco se movio a las 2 horas." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
+            } else {
+                cout << "Jugada invalida." << endl;
+            }
+        }
     }
 };
 
@@ -133,8 +158,18 @@ public:
         Pieza(_color, Tipo::Torre){}
     ~Torre(){}
 
-    void mover(){
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas de la tore
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                cout << "El caballo blanco se movio a las 2 horas." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
+            } else {
+                cout << "Jugada invalida." << endl;
+            }
+        }
     }
 };
 
@@ -145,8 +180,18 @@ public:
         Pieza(_color, Tipo::Dama){}
     ~Dama(){}
 
-    void mover(){
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas de la dama
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                cout << "El caballo blanco se movio a las 2 horas." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
+            } else {
+                cout << "Jugada invalida." << endl;
+            }
+        }
     }
 };
 
@@ -157,29 +202,42 @@ public:
         Pieza(_color, Tipo::Rey){}
     ~Rey(){}
 
-    void mover(){
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas del rey
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                cout << "El caballo blanco se movio a las 2 horas." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+                    //codigo
+            } else {
+                cout << "Jugada invalida." << endl;
+            }
+        }
     }
 };
 
-
-
 int main()
 {
-    Peon peonBlancoPrueba(Pieza::Blanca);
-    Peon peonNegroPrueba(Pieza::Negra);
+    Caballo caballoPrueba(Pieza::Blanca);
 
-    //se mueve una casilla
-    peonBlancoPrueba.mover(1,5,1,6);
-    //se mueve dos casillas desde posicion inicial
-    peonNegroPrueba.mover(3,7,3,5);
+    //8 posibles movimientos
 
-    //se intenta mover dos casillas despues de posicion inicial
-    peonBlancoPrueba.mover(1,6,1,8);
-    //se mueve fuera del tablero
-    peonBlancoPrueba.mover(1,8,1,9);
+    //se mueve al norte izq y norte der
+    caballoPrueba.mover(4,4,3,6);
+    caballoPrueba.mover(4,4,5,6);
 
+    //este izq y der
+    caballoPrueba.mover(4,4,6,3);
+    caballoPrueba.mover(4,4,6,5);
+
+    //sur izq y der
+    caballoPrueba.mover(4,4,3,2);
+    caballoPrueba.mover(4,4,5,2);
+
+    //oeste izq y der
+    caballoPrueba.mover(4,4,2,3);
+    caballoPrueba.mover(4,4,2,5);
 
     return 0;
 }
-
