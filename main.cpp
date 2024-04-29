@@ -1,6 +1,6 @@
 /*
 AJEDREZ
-added rook movement functionality
+added queen movement functionality
 */
 
 #include <iostream>
@@ -56,7 +56,6 @@ public:
     }
 
 };
-
 
 /* COLUMNA = col
    RENGLON = ren */
@@ -190,18 +189,31 @@ public:
         Pieza(_color, Tipo::Dama){}
     ~Dama(){}
 
-    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if(renglonDiff<0){
+            renglonDiff = renglonDiff*(-1);
+        }
+        if(columnaDiff<0){
+            columnaDiff = columnaDiff*(-1);
+        }
+
         //reglas de movimiento especificas de la dama
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (condicion de la pieza) {
-                cout << "Mensaje de la pieza." << endl;
+            if (columnaDiff == renglonDiff) {
+                cout << "La dama se movio en diagonal." << endl;
+                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                //cambio turno
+            } else if (col_inicial == col_final || ren_inicial == ren_final){
+                cout << "La dama se movio en horizontal o vertical." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }*/
+    }
 };
 
 class Rey : public Pieza{
@@ -225,20 +237,23 @@ public:
     }*/
 };
 
-
-
 int main()
 {
-    Torre torrePrueba(Pieza::Blanca);
+    Dama damaPrueba(Pieza::Blanca);
 
-    //vertical
-    torrePrueba.mover(1,1,1,8);
-    torrePrueba.mover(2,5,2,7);
+    //invalidas
+    damaPrueba.mover(1,1,3,2);
 
-    //horizontal
-    torrePrueba.mover(4,2,8,2);
-    torrePrueba.mover(1,3,2,3);
+    //diagonal
+    damaPrueba.mover(1,1,8,8);
+    damaPrueba.mover(8,8,1,1);
 
+    //invalida
+    damaPrueba.mover(8,8,7,6);
+
+    //horizontal y vertical
+    damaPrueba.mover(1,1,1,8);
+    damaPrueba.mover(5,3,5,1);
 
     return 0;
 }
