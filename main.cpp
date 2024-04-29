@@ -1,6 +1,6 @@
 /*
 AJEDREZ
-added knight movement functionality
+added bishop movement functionality
 */
 
 #include <iostream>
@@ -9,8 +9,6 @@ using namespace std;
 
 //caracteristicas generales de todas las piezas
 class Pieza{
-protected:
-
 public:
     enum Color{Blanca, Negra};
     enum Tipo{Peon, Caballo, Alfil, Torre, Dama, Rey};
@@ -138,12 +136,23 @@ public:
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas del alfil
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+
+        //obetner valor absoluto para que los signos no afecten la igualdad
+        if(renglonDiff<0){
+            renglonDiff = renglonDiff*(-1);
+        }
+
+        if(columnaDiff<0){
+            columnaDiff = columnaDiff*(-1);
+        }
+
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
-                cout << "El caballo blanco se movio a las 2 horas." << endl;
+            if (columnaDiff == renglonDiff) {
+                cout << "El alfil se movio." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
-                    //codigo
             } else {
                 cout << "Jugada invalida." << endl;
             }
@@ -158,19 +167,18 @@ public:
         Pieza(_color, Tipo::Torre){}
     ~Torre(){}
 
-    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas de la tore
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
-                cout << "El caballo blanco se movio a las 2 horas." << endl;
+            if (condicion de la pieza) {
+                cout << "Mensaje de la pieza." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
-                    //codigo
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }
+    }*/
 };
 
 class Dama : public Pieza{
@@ -180,19 +188,18 @@ public:
         Pieza(_color, Tipo::Dama){}
     ~Dama(){}
 
-    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas de la dama
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
-                cout << "El caballo blanco se movio a las 2 horas." << endl;
+            if (condicion de la pieza) {
+                cout << "Mensaje de la pieza." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
-                    //codigo
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }
+    }*/
 };
 
 class Rey : public Pieza{
@@ -202,42 +209,35 @@ public:
         Pieza(_color, Tipo::Rey){}
     ~Rey(){}
 
-    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas del rey
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
-                cout << "El caballo blanco se movio a las 2 horas." << endl;
+            if (condicion de la pieza) {
+                cout << "Mensaje de la pieza." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                 //cambio turno
-                    //codigo
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }
+    }*/
 };
 
 int main()
 {
-    Caballo caballoPrueba(Pieza::Blanca);
+    Alfil alfilPrueba(Pieza::Blanca);
 
-    //8 posibles movimientos
+    //diagonal noreste
+    alfilPrueba.mover(4,4,5,5);
 
-    //se mueve al norte izq y norte der
-    caballoPrueba.mover(4,4,3,6);
-    caballoPrueba.mover(4,4,5,6);
+    //diagonal sureste
+    alfilPrueba.mover(3,5,5,3);
 
-    //este izq y der
-    caballoPrueba.mover(4,4,6,3);
-    caballoPrueba.mover(4,4,6,5);
+    //diagonal suroeste
+    alfilPrueba.mover(7,5,4,2);
 
-    //sur izq y der
-    caballoPrueba.mover(4,4,3,2);
-    caballoPrueba.mover(4,4,5,2);
-
-    //oeste izq y der
-    caballoPrueba.mover(4,4,2,3);
-    caballoPrueba.mover(4,4,2,5);
+    //diagonal noroeste
+    alfilPrueba.mover(8,3,4,7);
 
     return 0;
 }
