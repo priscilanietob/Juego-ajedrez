@@ -1,11 +1,20 @@
 /*
 AJEDREZ
-added queen movement functionality
+added king movement functionality
 */
 
 #include <iostream>
 
 using namespace std;
+
+class Tablero {
+    //arreglo del tablero??
+public:
+    Tablero(){}
+    ~Tablero(){}
+
+    //funcion de cambio de turno
+};
 
 //caracteristicas generales de todas las piezas
 class Pieza{
@@ -56,6 +65,7 @@ public:
     }
 
 };
+
 
 /* COLUMNA = col
    RENGLON = ren */
@@ -223,37 +233,53 @@ public:
         Pieza(_color, Tipo::Rey){}
     ~Rey(){}
 
-    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
-        //reglas de movimiento especificas del rey
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if(renglonDiff<0){
+            renglonDiff = renglonDiff*(-1);
+        }
+        if(columnaDiff<0){
+            columnaDiff = columnaDiff*(-1);
+        }
+
+        //reglas de movimiento especificas de la dama
         if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (condicion de la pieza) {
-                cout << "Mensaje de la pieza." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
+            if(columnaDiff <=1 && renglonDiff<=1){ //se asegura que solo se mueva una casilla
+                if (columnaDiff == renglonDiff) {
+                    cout << "El rey se movio en alguna diagonal." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                } else if (col_inicial == col_final || ren_inicial == ren_final){
+                    cout << "El rey se movio en horizontal o vertical." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }*/
+    }
 };
 
 int main()
 {
-    Dama damaPrueba(Pieza::Blanca);
+    Rey reyPrueba(Pieza::Blanca);
 
     //invalidas
-    damaPrueba.mover(1,1,3,2);
+    reyPrueba.mover(1,1,3,2);
 
     //diagonal
-    damaPrueba.mover(1,1,8,8);
-    damaPrueba.mover(8,8,1,1);
+    reyPrueba.mover(1,1,2,2);
+    reyPrueba.mover(8,8,7,7);
 
     //invalida
-    damaPrueba.mover(8,8,7,6);
+    reyPrueba.mover(8,8,7,6);
 
     //horizontal y vertical
-    damaPrueba.mover(1,1,1,8);
-    damaPrueba.mover(5,3,5,1);
+    reyPrueba.mover(1,1,1,2);
+    reyPrueba.mover(5,3,6,3);
 
     return 0;
 }
+
