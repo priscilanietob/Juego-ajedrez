@@ -1,11 +1,24 @@
 /*
 AJEDREZ
-added queen movement functionality
+se agrego movimiento del rey
 */
 
 #include <iostream>
 
 using namespace std;
+
+class Tablero {
+    int columna;
+    int renglon;
+public:
+    Tablero(){}
+    ~Tablero(){}
+
+    //funcion de registro de jugadas
+
+
+    //funcion de cambio de turno
+};
 
 //caracteristicas generales de todas las piezas
 class Pieza{
@@ -35,17 +48,17 @@ public:
         }
     }
 
-    bool isCheck(){
+    bool esJaque(){
         //revisar si esta en jaque
         return false;
     }
 
-    bool isCheckmate(){
+    bool esJaquemate(){
         //revisar si esta en jaque mate
         return false;
     }
 
-    bool isSpaceOccupied(){
+    bool casillaOcupada(){
         //checar si la casilla esta ocupada
         return false;
     }
@@ -56,6 +69,7 @@ public:
     }
 
 };
+
 
 /* COLUMNA = col
    RENGLON = ren */
@@ -70,7 +84,7 @@ public:
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
 
         //revisar que no este en jaque/mate y q se mueva dentro del tablero Y q no este ocupada la casilla
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && (!casillaOcupada())){
 
             //q se mueva solo uno hacia en frente
             if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
@@ -111,7 +125,7 @@ public:
     ~Caballo(){}
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && (!casillaOcupada())){
             if ((col_final == col_inicial-1 || col_inicial+1) && (ren_final == ren_inicial + 2 || ren_final == ren_inicial - 2)) {
                 cout << "El caballo se movio hacia el norte o el sur." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
@@ -149,7 +163,7 @@ public:
             columnaDiff = columnaDiff*(-1);
         }
 
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && (!casillaOcupada())){
             if (columnaDiff == renglonDiff) {
                 cout << "El alfil se movio." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
@@ -170,7 +184,7 @@ public:
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
         //reglas de movimiento especificas de la tore
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && (!casillaOcupada())){
             if (col_inicial == col_final || ren_inicial == ren_final) {
                 cout << "La torre se movio." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
@@ -200,7 +214,7 @@ public:
         }
 
         //reglas de movimiento especificas de la dama
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && (!casillaOcupada())){
             if (columnaDiff == renglonDiff) {
                 cout << "La dama se movio en diagonal." << endl;
                 Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
@@ -223,37 +237,52 @@ public:
         Pieza(_color, Tipo::Rey){}
     ~Rey(){}
 
-    /*void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
-        //reglas de movimiento especificas del rey
-        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!isCheck()) && (!isCheckmate()) && (!isSpaceOccupied())){
-            if (condicion de la pieza) {
-                cout << "Mensaje de la pieza." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final){
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if(renglonDiff<0){
+            renglonDiff = renglonDiff*(-1);
+        }
+        if(columnaDiff<0){
+            columnaDiff = columnaDiff*(-1);
+        }
+
+        //reglas de movimiento especificas de la dama
+        if(Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && (!casillaOcupada())){
+            if(columnaDiff <=1 && renglonDiff<=1){ //se asegura que solo se mueva una casilla
+                if (columnaDiff == renglonDiff) {
+                    cout << "El rey se movio en alguna diagonal." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                } else if (col_inicial == col_final || ren_inicial == ren_final){
+                    cout << "El rey se movio en horizontal o vertical." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
             } else {
                 cout << "Jugada invalida." << endl;
             }
         }
-    }*/
+    }
 };
 
 int main()
 {
-    Dama damaPrueba(Pieza::Blanca);
+    Rey reyPrueba(Pieza::Blanca);
 
     //invalidas
-    damaPrueba.mover(1,1,3,2);
+    reyPrueba.mover(1,1,3,2);
 
     //diagonal
-    damaPrueba.mover(1,1,8,8);
-    damaPrueba.mover(8,8,1,1);
+    reyPrueba.mover(1,1,2,2);
+    reyPrueba.mover(8,8,7,7);
 
     //invalida
-    damaPrueba.mover(8,8,7,6);
+    reyPrueba.mover(8,8,7,6);
 
     //horizontal y vertical
-    damaPrueba.mover(1,1,1,8);
-    damaPrueba.mover(5,3,5,1);
+    reyPrueba.mover(1,1,1,2);
+    reyPrueba.mover(5,3,6,3);
 
     return 0;
 }
