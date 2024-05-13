@@ -22,13 +22,13 @@ int main()
         std::cerr << "Error al cargar el archivo de letra." << std::endl;
         return 0;
     }
-    
+
     RenderWindow ventana(VideoMode(600, 330), "Main Menu"); //Crear ventana para el menu de inicio
 
     Texture texturaFondo, texturaPlay, texturaSettings, texturaExit; //Crear las texturas de los botones
     cargarTextura(texturaFondo, "fondo.png");
     cargarTextura(texturaPlay, "Play_resized.png");
-    cargarTextura(texturaSettings, "Settings_resized.png");
+    cargarTextura(texturaSettings, "Tutorial.png");
     cargarTextura(texturaExit, "Exit_resized.png");
 
     Sprite spriteFondo(texturaFondo);//Creo el sprite del fondo
@@ -41,10 +41,10 @@ int main()
 
     // Creacion de botones
     RectangleShape botonPlay(Vector2f(200, 60)); //Tamaño y posicion de los botones
-    botonPlay.setPosition(100, 50); 
+    botonPlay.setPosition(100, 50);
 
-    RectangleShape botonSettings(Vector2f(200, 60));
-    botonSettings.setPosition(100, 150);
+    RectangleShape botonTutorial(Vector2f(200, 60));
+    botonTutorial.setPosition(100, 150);
 
     RectangleShape botonExit(Vector2f(200, 60));
     botonExit.setPosition(100, 250);
@@ -71,7 +71,7 @@ int main()
                         RenderWindow ventana(VideoMode(1000,1000), "Tutorial");
                     }
                     if (botonPlay.getGlobalBounds().contains(mousePos.x, mousePos.y)) //Para checar si en los limites del boton esta el mouse dando clic
-                    { 
+                    {
                          // Crear el cuadro para el tablero
                         RenderWindow ventana(VideoMode(1000, 1000), "Tablero");
                         RectangleShape cuadro(Vector2f(100, 100));//tamanio de cada cuadro
@@ -80,13 +80,13 @@ int main()
                         // Funciones que imprimen las imagenes de los peones
                         Texture texturaPeonBlanco, texturaPeonNegro;//TEXTURAS DE PEONES
                         cargarTextura(texturaPeonBlanco, "peon_blanco_resized.png");
-                        cargarTextura(texturaPeonNegro, "peon_negro_resized.png");              
-                        
+                        cargarTextura(texturaPeonNegro, "peon_negro_resized.png");
+
                         //TEXTURAS DE TORRES/ROOKS
                         Texture texturaTorre_Negra, texturaTorre_Blanca;
                         cargarTextura(texturaTorre_Negra, "Torre_Negra.png");
-                        cargarTextura(texturaTorre_Blanca, "Torre_Blanca.png");   
-                        
+                        cargarTextura(texturaTorre_Blanca, "Torre_Blanca.png");
+
                         //TEXTURAS DE CABALLOS/KNIGHTS
                         Texture texturaCaballo_Negro, texturaCaballo_Blanco;
                         cargarTextura(texturaCaballo_Negro, "Caballo_Negro.png");
@@ -182,10 +182,10 @@ int main()
                                 ventana.draw(peonesNegros[i]);
                             }
                             //Dibujar los rooks, caballos y bishops
-                            for (int i = 0; i < 2; i++) 
+                            for (int i = 0; i < 2; i++)
                             {
                                 Torre_Blanca.setTexture(texturaTorre_Blanca);
-                                Torre_Negra.setTexture(texturaTorre_Negra);    
+                                Torre_Negra.setTexture(texturaTorre_Negra);
 
                                 Caballo_Blanco.setTexture(texturaCaballo_Blanco);
                                 Caballo_Negro.setTexture(texturaCaballo_Negro);
@@ -195,7 +195,7 @@ int main()
 
                                 Torre_Negra.setPosition(i * 700, 0);
                                 Torre_Blanca.setPosition(i * 700, 700);
-                                
+
                                 Caballo_Negro.setPosition(i * 500 + 100, 0);
                                 Caballo_Blanco.setPosition(i * 500 + 100, 700);
 
@@ -204,13 +204,13 @@ int main()
 
                                 ventana.draw(Torre_Blanca);
                                 ventana.draw(Torre_Negra);
-                                
+
                                 ventana.draw(Caballo_Blanco);
                                 ventana.draw(Caballo_Negro);
 
                                 ventana.draw(Alfil_Blanco);
                                 ventana.draw(Alfil_Negro);
-                            }       
+                            }
 
                             //QUEEN
                             Reina_Blanca.setTexture(texturaReina_Blanca);
@@ -233,7 +233,7 @@ int main()
                             ventana.draw(Rey_Negro);
 
                             ventana.draw(botonExitGame);
-                            
+
                             // Mostrar la ventana
                             ventana.display();
 
@@ -245,7 +245,7 @@ int main()
                     {
                         ventana.close();
                     }
-                    
+
                     else if (botonExitGame.getGlobalBounds().contains(mousePos.x, mousePos.y))
                     {
                         cout << "ola";
@@ -260,11 +260,11 @@ int main()
         ventana.draw(spriteFondo);
         ventana.draw(botonPlay);
         ventana.draw(play);
-        ventana.draw(botonSettings);
-        ventana.draw(Settings); 
+        ventana.draw(botonTutorial);
+        ventana.draw(Settings);
         ventana.draw(botonExitGame);
         ventana.draw(Exit);
         ventana.display();
-    }   
+    }
     return 0;
 }
