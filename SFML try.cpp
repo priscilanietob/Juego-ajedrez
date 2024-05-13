@@ -184,7 +184,7 @@ int main()
                                 Torre_Negra.setTexture(texturaTorre_Negra);    
 
                                 Caballo_Blanco.setTexture(texturaCaballo_Blanco);
-                                CaballoNegro.setTexture(texturaCaballoNegro);
+                                Caballo_Negro.setTexture(texturaCaballoNegro);
 
                                 Alfil_Blanco.setTexture(texturaAlfil_Blanco);
                                 Alfil_Negro.setTexture(texturaAlfil_Negro);
