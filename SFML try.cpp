@@ -66,6 +66,10 @@ int main()
                 if (evento.mouseButton.button == Mouse::Left)
                 {
                     Vector2i mousePos = Mouse::getPosition(ventana); //Se almacena la posicion del mouse en el vector2i que es de dos dimensiones X y Y
+                     if(botonTutorial.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                    {
+                        RenderWindow ventana(VideoMode(1000,1000), "Tutorial");
+                    }
                     if (botonPlay.getGlobalBounds().contains(mousePos.x, mousePos.y)) //Para checar si en los limites del boton esta el mouse dando clic
                     { 
                          // Crear el cuadro para el tablero
