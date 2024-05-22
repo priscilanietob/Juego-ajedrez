@@ -94,6 +94,14 @@ public:
         return tablero[col - 1][ren - 1] != nullptr; //se le quita uno por lo de los indices
     }
 
+    //casilla ocupada por otro color
+    bool casillaOcupadaOponente(Pieza* tablero[8][8], int col, int ren, Color miColor) const {
+        if (tablero[col-1][ren-1] != nullptr) {
+            return tablero[col-1][ren-1]->color != miColor;
+        }
+        return false;
+    }
+
     void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final) {
         col_inicial = col_final;
         ren_inicial = ren_final;
