@@ -5,7 +5,11 @@ esta funcion revisa que la casilla este ocupada y que ademas la pieza que la ocu
 */
 
 #include <SFML/Graphics.hpp>
+
+#include <SFML/Graphics.hpp>
 #include <iostream>
+#include "TableroValores.h"
+
 using namespace std;
 using namespace sf;
 
@@ -33,7 +37,7 @@ public:
             turnoActual = Color::Blanca;
         }
     }
-    string getTurnoATexto() const 
+    string getTurnoATexto() const
     {
         return (turnoActual == Blanca) ? "Blanco" : "Negro";
     }
@@ -42,7 +46,7 @@ public:
     {
         cout << "Turno de: " << getTurnoATexto() << endl;
         cambiarTurno();
-        cout << "Ahora es turno de: " << getTurnoATexto() << endl;   
+        cout << "Ahora es turno de: " << getTurnoATexto() << endl;
         cambiarTurno();
         cout << "Ahora es turno de: " << getTurnoATexto() << endl;
     }
@@ -52,7 +56,7 @@ class Pieza {
 public:
     enum Color { Blanca, Negra };
     enum Tipo { Peon, Caballo, Alfil, Torre, Dama, Rey };
-    
+
     Color color;
     Tipo tipo;
 
@@ -88,14 +92,6 @@ public:
 
     bool casillaOcupada(Pieza* tablero[8][8], int col, int ren) const {
         return tablero[col - 1][ren - 1] != nullptr; //se le quita uno por lo de los indices
-    }
-
-    //casilla ocupada por otro color
-    bool casillaOcupadaOponente(Pieza* tablero[8][8], int col, int ren, Color miColor) const {
-        if (tablero[col-1][ren-1] != nullptr) {
-            return tablero[col-1][ren-1]->color != miColor;
-        }
-        return false;
     }
 
     void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final) {
@@ -476,7 +472,6 @@ public:
 };
 
 
-
 // Función para cargar texturas desde un archivo
 bool cargarTextura(Texture& textura, const string& archivo)
 {
@@ -491,33 +486,15 @@ bool cargarTextura(Texture& textura, const string& archivo)
 
 int main()
 {
-    Tablero tablero;
-
-    tablero.displayTurno();
-
-    //PRUEBAS puedeMoverse()
-
-    //se trata de mover a un lugar donde no puede
-    Peon peonPrueba(Pieza::Blanca);
-
-    //deberia imprimir que no puede moverse
-    if (!peonPrueba.puedeMoverse(2, 3, 2, 5)) {
-        cout << "No puede moverse a esa casilla." << endl;
-    }
-
-    //deberia imprimir que si puede
-    if (peonPrueba.puedeMoverse(2, 3, 2, 4)) {
-        cout << "Puede moverse a esa casilla." << endl;
-    }
-
     //carga la tipografia arial para las coordenadas
     Font font;
     if (!font.loadFromFile("arial.ttf.ttf")) { //busca el archivo de font y despliega error si no se encuentra.
         cerr << "Error al cargar el archivo de letra." << endl;
         return 0;
     }
+    const int numPeones = 8;
 
-    RenderWindow ventanaMenu(VideoMode(600, 330), "Main Menu"); //Crear ventana para el menu de inicio
+    RenderWindow ventanaMenu(VideoMode(600, 330), "Menu Principal"); //Crear ventana para el menu de inicio
 
     Texture texturaFondo, texturaPlay, texturaSettings, texturaExit; //Crear las texturas de los botones
     cargarTextura(texturaFondo, "fondo.png");
@@ -543,12 +520,15 @@ int main()
     RectangleShape botonExit(Vector2f(200, 60));
     botonExit.setPosition(100, 250);
 
-    RectangleShape botonExitGame(Vector2f(100, 60));
-    botonExitGame.setPosition(850, 900);
-    botonExitGame.setFillColor(Color::Red);
+    RectangleShape botonSalirJuego(Vector2f(100, 60));
+    botonSalirJuego.setPosition(850, 900);
+    botonSalirJuego.setFillColor(Color::Red);
 
     RenderWindow ventanaJuego(VideoMode(1000, 1000), "Tablero");
     ventanaJuego.setVisible(false);
+
+    vector<Sprite> peonesBlancos(numPeones);
+    vector<Sprite> peonesNegros(numPeones);
 
     // Bucle principal
     while (ventanaMenu.isOpen() || ventanaJuego.isOpen())
@@ -559,7 +539,9 @@ int main()
             while (ventanaMenu.pollEvent(evento))
             {
                 if (evento.type == Event::Closed)
+                {
                     ventanaMenu.close();
+                }
                 else if (evento.type == Event::MouseButtonPressed)
                 {
                     if (evento.mouseButton.button == Mouse::Left)
@@ -577,15 +559,15 @@ int main()
                     }
                 }
             }
-            ventanaMenu.clear();
-            ventanaMenu.draw(spriteFondo);
-            ventanaMenu.draw(botonPlay);
-            ventanaMenu.draw(play);
-            ventanaMenu.draw(botonSettings);
-            ventanaMenu.draw(Settings);
-            ventanaMenu.draw(botonExit);
-            ventanaMenu.draw(Exit);
-            ventanaMenu.display();
+             ventanaMenu.clear();
+             ventanaMenu.draw(spriteFondo);
+             ventanaMenu.draw(botonPlay);
+             ventanaMenu.draw(play);
+             ventanaMenu.draw(botonSettings);
+             ventanaMenu.draw(Settings);
+             ventanaMenu.draw(botonExit);
+             ventanaMenu.draw(Exit);
+             ventanaMenu.display();
         }
         if (ventanaJuego.isOpen())
         {
@@ -593,46 +575,114 @@ int main()
             while (ventanaJuego.pollEvent(evento))
             {
                 if (evento.type == Event::Closed)
+                {
                     ventanaJuego.close();
+                }
+                else if (evento.type == Event::MouseButtonPressed)
+                {
+                    if (evento.mouseButton.button == Mouse::Left)
+                    {
+                        Vector2i mousePos = Mouse::getPosition(ventanaJuego);
+                        Vector2i clicPos = Mouse::getPosition(ventanaJuego);
+                        int clicColumna = clicPos.x / 100; // Obtener la columna donde se hizo clic
+                        int clicFila = clicPos.y / 100; // Obtener la fila donde se hizo clic
+
+/*movimiento::movimiento(int X1, int Y1, int X2, int Y2)
+{
+    aX=X1;
+    aY=Y1;
+    X=X2;
+    Y=Y2;
+}
+void tableroAjedrez::PeonBlanco(vector<movimiento> &movimientos, int X, int Y)
+{
+    if(y>0)
+    {
+         if(aTablero.arr[x][y-1]==-1)
+            {
+                movimientos.push_back(movimiento(x, y, x, y-1));
+                if(aTablero.arr[x][y-2]==-1 && y==6)
+                {
+                    movimientos.push_back(movimiento(x, y, x, y-2));
+                }
+            }
+         if (x>0)
+            {
+                if(aTablero.arr[x-1[y-1]>=6)
+                {
+                    movimientos.push_back(movimiento(x, y, x-1, y-1));
+                }
+            }
+         if (x<7)
+            {
+                if(aTablero.arr[x+1[y-1]>=6)
+                {
+                    movimientos.push_back(movimiento(x, y, x+1, y-1));
+                }
+            }
+    }
+}*/
+
+                        for (int i = 0; i < numPeones; ++i)
+                        {
+                            // Verificar si se hizo clic en una casilla delante de un peón blanco
+                            if (peonesBlancos[i].getPosition().y / 100 == clicFila - 1 && peonesBlancos[i].getPosition().x / 100 == clicColumna)
+                            {
+                                // Si hay un peón blanco en la fila 6 (índice 1) y se hace clic en la casilla delante de él, puede avanzar una casilla
+                                peonesBlancos[i].move(0, -100); // Mover el peón blanco hacia adelante
+                                break; // Salir del bucle una vez que se ha movido un peón
+                            }
+
+                            // Verificar si se hizo clic en una casilla delante de un peón negro
+                            if (peonesNegros[i].getPosition().y / 100 == clicFila + 1 && peonesNegros[i].getPosition().x / 100 == clicColumna)
+                            {
+                                // Si hay un peón negro en la fila 1 (índice 6) y se hace clic en la casilla delante de él, puede avanzar una casilla
+                                peonesNegros[i].move(0, 100); // Mover el peón negro hacia adelante
+                                break; // Salir del bucle una vez que se ha movido un peón
+                            }
+                        }
+                        cout << "La pieza esta en la posicion: " << mousePos.x << ", " << mousePos.y << endl;
+                    }
+                }
             }
             ventanaJuego.clear();
 
 
-            // Crear el cuadro para el tablero
+             // Crear el cuadro para el tablero
             RectangleShape cuadro(Vector2f(100, 100));//tamanio de cada cuadro
             bool colorBlanco = true;
 
             // Funciones que imprimen las imagenes de los peones
             Texture texturaPeonBlanco, texturaPeonNegro;//TEXTURAS DE PEONES
-            cargarTextura(texturaPeonBlanco, "peon_blanco_resized.png");
-            cargarTextura(texturaPeonNegro, "peon_negro_resized.png");
+            cargarTextura(texturaPeonBlanco, "Peon_blanco.png");
+            cargarTextura(texturaPeonNegro, "Peon_negro.png");
 
-            //TEXTURAS DE TORRES/ROOKS
-            Texture texturaBRook, texturaWRook;
-            cargarTextura(texturaBRook, "Rook B_resized.png");
-            cargarTextura(texturaWRook, "Rook W_resized.png");
+            //TEXTURAS DE TORRES
+            Texture texturaTorreBlanca, texturaTorreNegra;
+            cargarTextura(texturaTorreBlanca, "Torre_Blanca.png");
+            cargarTextura(texturaTorreNegra, "Torre_Negra.png");
 
             //TEXTURAS DE CABALLOS/KNIGHTS
-            Texture texturaBKnight, texturaWKnight;
-            cargarTextura(texturaBKnight, "BKnight_resized.png");
-            cargarTextura(texturaWKnight, "WKnight_resized.png");
+            Texture texturaCaballoBlanco, texturaCaballoNegro;
+            cargarTextura(texturaCaballoBlanco, "Caballo_Blanco.png");
+            cargarTextura(texturaCaballoNegro, "Caballo_Negro.png");
 
             //TEXTURAS DE ALFIL/BISHOP
-            Texture texturaBBishop, texturaWBishop;
-            cargarTextura(texturaBBishop, "BBishop_resized.png");
-            cargarTextura(texturaWBishop, "WBishop_resized.png");
+            Texture texturaAlfilBlanco, texturaAlfilNegro;
+            cargarTextura(texturaAlfilBlanco, "Alfil_Blanco.png");
+            cargarTextura(texturaAlfilNegro, "Alfil_Negro.png");
 
             //TEXCTURAS DE LA REINA/QUEEN
-            Texture texturaBQueen, texturaWQueen;
-            cargarTextura(texturaBQueen, "BQueen_resized.png");
-            cargarTextura(texturaWQueen, "WQueen_resized.png");
+            Texture texturaReinaBlanca, texturaReinaNegra;
+            cargarTextura(texturaReinaBlanca, "Reina_Blanca.png");
+            cargarTextura(texturaReinaNegra, "Reina_Negra.png");
 
             //TEXTURAS DEL REY/KING
-            Texture texturaBKing, texturaWKing;
-            cargarTextura(texturaBKing, "BKing_resized.png");
-            cargarTextura(texturaWKing, "WKing_resized.png");
+            Texture texturaReyBlanco, texturaReyNegro;
+            cargarTextura(texturaReyBlanco, "Rey_Blanco.png");
+            cargarTextura(texturaReyNegro, "Rey_Negro.png");
 
-            Sprite BRook, WRook, BKnight, WKnight, WBishop, BBishop, BQueen, WQueen, WKing, BKing;
+            Sprite PeonBlanco, PeonNegro, TorreBlanca, TorreNegra, CaballoBlanco, CaballoNegro, AlfilBlanco, AlfilNegro, ReinaBlanca, ReinaNegra, ReyBlanco, ReyNegro;
 
             // Posiciones iniciales de los peones
             const int numPeones = 8;
@@ -647,134 +697,133 @@ int main()
                 peonesBlancos[i].setPosition(i * 100, 600);
                 peonesNegros[i].setPosition(i * 100, 100);
             }
-            // Dibujar el tablero
-            for (int i = 0; i < 8; ++i)
-            {
-                for (int j = 0; j < 8; ++j)
+                // Dibujar el tablero
+                for (int i = 0; i < 8; ++i)
                 {
-                    cuadro.setFillColor(colorBlanco ? Color::White : Color::Black);
-                    cuadro.setPosition(j * 100, i * 100);
-                    ventanaJuego.draw(cuadro);
+                    for (int j = 0; j < 8; ++j)
+                    {
+                        cuadro.setFillColor(colorBlanco ? Color::White : Color::Black);
+                        cuadro.setPosition(j * 100, i * 100);
+                        ventanaJuego.draw(cuadro);
+                        colorBlanco = !colorBlanco;
+                    }
                     colorBlanco = !colorBlanco;
                 }
-                colorBlanco = !colorBlanco;
-            }
 
-            //define el texto, su tamanio y color
-            Text text;
-            text.setFont(font);
-            text.setCharacterSize(30);
-            text.setFillColor(sf::Color::White);
+                //define el texto, su tamanio y color
+                Text text;
+                text.setFont(font);
+                text.setCharacterSize(30);
+                text.setFillColor(sf::Color::White);
 
-            // posiciones iniciales para letras y numeros
-            int letrasss = 30;
-            int numeros = 40;
+                // posiciones iniciales para letras y numeros
+                int letrasss = 30;
+                int numeros = 40;
 
-            // Dibujar las letras (A-H)
-            for (int i = 0; i < 8; ++i) {
-                char letras = 'A' + i;
-                text.setString(std::string(1, letras));
-                text.setPosition(letrasss + i * 100, 800);
-                ventanaJuego.draw(text);
-            }
+                // Dibujar las letras (A-H)
+                for (int i = 0; i < 8; ++i) {
+                    char letras = 'A' + i;
+                    text.setString(std::string(1, letras));
+                    text.setPosition(letrasss + i * 100, 800);
+                    ventanaJuego.draw(text);
+                }
 
-            // Dibujar los números (1-8)
-            for (int i = 0; i < 8; ++i) {
-                char num = '8' - i;
-                text.setString(std::string(1, num));
-                text.setPosition(815, numeros + i * 100);
-                ventanaJuego.draw(text);
-            }
+                // Dibujar los números (1-8)
+                for (int i = 0; i < 8; ++i) {
+                    char num = '8' - i;
+                    text.setString(std::string(1, num));
+                    text.setPosition(815, numeros + i * 100);
+                    ventanaJuego.draw(text);
+                }
 
 
-            // Dibujar los peones blancos
-            for (int i = 0; i < numPeones; i++)
-            {
-                ventanaJuego.draw(peonesBlancos[i]);
-            }
-
-            // Dibujar los peones negros
-            for (int i = 0; i < numPeones; i++)
-            {
-                ventanaJuego.draw(peonesNegros[i]);
-            }
-            //Dibujar los rooks, caballos y bishops
-            for (int i = 0; i < 2; i++)
-            {
-                WRook.setTexture(texturaWRook);
-                BRook.setTexture(texturaBRook);
-
-                WKnight.setTexture(texturaWKnight);
-                BKnight.setTexture(texturaBKnight);
-
-                WBishop.setTexture(texturaWBishop);
-                BBishop.setTexture(texturaBBishop);
-
-                BRook.setPosition(i * 700, 0);
-                WRook.setPosition(i * 700, 700);
-
-                BKnight.setPosition(i * 500 + 100, 0);
-                WKnight.setPosition(i * 500 + 100, 700);
-
-                BBishop.setPosition(i * 300 + 200, 0);
-                WBishop.setPosition(i * 300 + 200, 700);
-
-                ventanaJuego.draw(WRook);
-                ventanaJuego.draw(BRook);
-
-                ventanaJuego.draw(WKnight);
-                ventanaJuego.draw(BKnight);
-
-                ventanaJuego.draw(WBishop);
-                ventanaJuego.draw(BBishop);
-            }
-
-            //QUEEN
-            WQueen.setTexture(texturaWQueen);
-            BQueen.setTexture(texturaBQueen);
-
-            BQueen.setPosition(300, 0);
-            WQueen.setPosition(300, 700);
-
-            ventanaJuego.draw(WQueen);
-            ventanaJuego.draw(BQueen);
-
-            //KING
-            WKing.setTexture(texturaWKing);
-            BKing.setTexture(texturaBKing);
-
-            BKing.setPosition(400, 0);
-            WKing.setPosition(400, 700);
-
-            ventanaJuego.draw(WKing);
-            ventanaJuego.draw(BKing);
-
-            ventanaJuego.draw(botonExitGame);
-            if (ventanaJuego.isOpen())
-            {
-                Event Cerrar;
-                while (ventanaJuego.pollEvent(Cerrar))
+                // Dibujar los peones blancos
+                for (int i = 0; i < numPeones; i++)
                 {
-                    if (Cerrar.type == Event::Closed)
-                        ventanaJuego.close();
-                    else if (Cerrar.type == Event::MouseButtonPressed)
-                    {
-                        if (Cerrar.mouseButton.button == Mouse::Left)
-                        {
-                            Vector2i mousePos = Mouse::getPosition(ventanaJuego);
-                            if (botonExitGame.getGlobalBounds().contains(mousePos.x, mousePos.y))
-                            {
-                                ventanaJuego.close();
+                    ventanaJuego.draw(peonesBlancos[i]);
+                }
 
+                // Dibujar los peones negros
+                for (int i = 0; i < numPeones; i++)
+                {
+                    ventanaJuego.draw(peonesNegros[i]);
+                }
+                //Dibujar los rooks, caballos y bishops
+                for (int i = 0; i < 2; i++)
+                {
+                    TorreBlanca.setTexture(texturaTorreBlanca);
+                    TorreNegra.setTexture(texturaTorreNegra);
+
+                    CaballoBlanco.setTexture(texturaCaballoBlanco);
+                    CaballoNegro.setTexture(texturaCaballoNegro);
+
+                    AlfilBlanco.setTexture(texturaAlfilBlanco);
+                    AlfilNegro.setTexture(texturaAlfilNegro);
+
+                    TorreBlanca.setPosition(i * 700, 700);
+                    TorreNegra.setPosition(i * 700, 0);
+
+                    CaballoBlanco.setPosition(i * 500 + 100, 700);
+                    CaballoNegro.setPosition(i * 500 + 100, 0);
+
+                    AlfilBlanco.setPosition(i * 300 + 200, 700);
+                    AlfilNegro.setPosition(i * 300 + 200, 0);
+
+                    ventanaJuego.draw(TorreBlanca);
+                    ventanaJuego.draw(TorreNegra);
+
+                    ventanaJuego.draw(CaballoBlanco);
+                    ventanaJuego.draw(CaballoNegro);
+
+                    ventanaJuego.draw(AlfilBlanco);
+                    ventanaJuego.draw(AlfilNegro);
+                }
+
+                //QUEEN
+                ReinaBlanca.setTexture(texturaReinaBlanca);
+                ReinaNegra.setTexture(texturaReinaNegra);
+
+                ReinaBlanca.setPosition(300, 700);
+                ReinaNegra.setPosition(300, 0);
+
+                ventanaJuego.draw(ReinaBlanca);
+                ventanaJuego.draw(ReinaNegra);
+
+                //KING
+                ReyBlanco.setTexture(texturaReyBlanco);
+                ReyNegro.setTexture(texturaReyNegro);
+
+                ReyNegro.setPosition(400, 0);
+                ReyBlanco.setPosition(400, 700);
+
+                ventanaJuego.draw(ReyBlanco);
+                ventanaJuego.draw(ReyNegro);
+
+                ventanaJuego.draw(botonSalirJuego);
+                if (ventanaJuego.isOpen())
+                {
+                    Event Cerrar;
+                    while (ventanaJuego.pollEvent(Cerrar))
+                    {
+                        if (Cerrar.type == Event::Closed)
+                            ventanaJuego.close();
+                        else if (Cerrar.type == Event::MouseButtonPressed)
+                        {
+                            if (Cerrar.mouseButton.button == Mouse::Left)
+                            {
+                                Vector2i mousePos = Mouse::getPosition(ventanaJuego);
+                                if (botonSalirJuego.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                                {
+                                    ventanaJuego.close();
+
+                                }
                             }
                         }
                     }
                 }
-            }
 
             ventanaJuego.display();
         }
     }
-
     return 0;
 }
