@@ -1,10 +1,6 @@
 /*
 AJEDREZ
-se agrega funcion bool casillaOcupadaOponente()
-esta funcion revisa que la casilla este ocupada y que ademas la pieza que la ocupa sea del color opuesto
 */
-
-#include <SFML/Graphics.hpp>
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
