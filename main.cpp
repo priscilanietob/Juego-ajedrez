@@ -1,4 +1,8 @@
-//Codigo con las ventanas separadas de ventana menu y ventana juego
+/*
+AJEDREZ
+se agrega funcion bool casillaOcupadaOponente()
+esta funcion revisa que la casilla este ocupada y que ademas la pieza que la ocupa sea del color opuesto
+*/
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -84,6 +88,14 @@ public:
 
     bool casillaOcupada(Pieza* tablero[8][8], int col, int ren) const {
         return tablero[col - 1][ren - 1] != nullptr; //se le quita uno por lo de los indices
+    }
+
+    //casilla ocupada por otro color
+    bool casillaOcupadaOponente(Pieza* tablero[8][8], int col, int ren, Color miColor) const {
+        if (tablero[col-1][ren-1] != nullptr) {
+            return tablero[col-1][ren-1]->color != miColor;
+        }
+        return false;
     }
 
     void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final) {
