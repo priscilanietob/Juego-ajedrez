@@ -1,0 +1,43 @@
+#ifndef TABLEROVALORES_H_INCLUDED
+#define TABLEROVALORES_H_INCLUDED
+
+#include <vector>
+
+using namespace std;
+
+struct movimiento
+{
+    int aX, aY, X, Y;
+    movimiento(){}
+    movimiento(int X1, int Y1, int X2, int Y2);
+};
+
+struct tableroValores
+{
+    int arr[8][8]= {{7, 6, -1, -1, -1, -1, 0, 1},
+                    {8, 6, -1, -1, -1, -1, 0, 2},
+                    {9, 6, -1, -1, -1, -1, 0, 3},
+                    {11, 6, -1, -1, -1, -1, 0, 5},
+                    {10, 6, -1, -1, -1, -1, 0, 4},
+                    {9, 6, -1, -1, -1, -1, 0, 3},
+                    {8, 6, -1, -1, -1, -1, 0, 2},
+                    {7, 6, -1, -1, -1, -1, 0, 1}};
+};
+
+class tableroAjedrez
+{
+private:
+    bool turno=1;
+    const char *coordenada(int x, int y);
+    vector<tableroValores> historial;
+
+    void PeonBlanco(vector<movimiento> &movimientos, int x, int y);
+    void PeonNegro(vector<movimiento> &movimientos, int x, int y);
+    vector<movimiento> getAceptarMovimiento(tableroValores b, bool color);
+public:
+    tableroValores aTablero;
+    bool hacerMovimiento(movimiento inicial);
+    bool siguienteTurno();
+};
+
+#endif // TABLEROVALORES_H_INCLUDED
