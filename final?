@@ -29,7 +29,7 @@ public:
         }
     }
 
-    void displayTurno() 
+    void displayTurno()
     {
         if (turnoActual == true)
         {
@@ -41,7 +41,7 @@ public:
             cout << "Turno de Blancas" << endl;
             turnoActual = !turnoActual;
         }
- 
+
     }
     string getTurnoATexto() const
     {
@@ -665,7 +665,7 @@ int main()
     bool turnoActual = true;
 
     bool MoverReinaB = false, MoverReinaN = false; //para saber si una pieza se esta moviendo
-    bool MoverPeonB[8] = { false }, MoverPeonN[8] = { false }; 
+    bool MoverPeonB[8] = { false }, MoverPeonN[8] = { false };
     bool MoverReyB = false, MoverReyN = false;
     bool MoverTorreB[2] = { false }, MoverTorreN[2] = { false };
     bool MoverCaballoB[2] = { false }, MoverCaballoN[2] = { false };
@@ -716,36 +716,34 @@ int main()
     RenderWindow ventanaJuego(VideoMode(1000, 1000), "Tablero");
     ventanaJuego.setVisible(false);
 
-    //Funciones que agarran las imagenes del archivo y las adjudican a las piezas 
-    Texture texturaPeonBlanco, texturaPeonNegro; // Texturas de peones
-    cargarTextura(texturaPeonBlanco, "peon_blanco_resized.png");
-    cargarTextura(texturaPeonNegro, "peon_negro_resized.png");
+    //Funciones que agarran las imagenes del archivo y las adjudican a las piezas
+    Texture texturaPeonBlanco, texturaPeonNegro;//TEXTURAS DE PEONES
+    cargarTextura(texturaPeonBlanco, "Peon_blanco.png");
+    cargarTextura(texturaPeonNegro, "Peon_negro.png");
 
-    //Texturas de torres/rooks
-    Texture texturaTorreNegra, texturaTorreBlanca;
-    cargarTextura(texturaTorreNegra, "Rook B_resized.png");
-    cargarTextura(texturaTorreBlanca, "Rook W_resized.png");
+    //TEXTURAS DE TORRES
+    Texture texturaTorreBlanca, texturaTorreNegra;
+    cargarTextura(texturaTorreBlanca, "Torre_Blanca.png");
+    cargarTextura(texturaTorreNegra, "Torre_Negra.png");
 
-    //Texturas de caballos/knights
-    Texture texturaCaballoNegro, texturaCaballoBlanco;
+    //TEXTURAS DE CABALLOS/KNIGHTS
+    Texture texturaCaballoBlanco, texturaCaballoNegro;
+    cargarTextura(texturaCaballoBlanco, "Caballo_Blanco.png");
     cargarTextura(texturaCaballoNegro, "Caballo_Negro.png");
-    cargarTextura(texturaCaballoBlanco, "WKnight_resized.png");
 
-    //Texturas de alfiles/bishops
-    Texture texturaAlfilNegro, texturaAlfilBlanco;
-    cargarTextura(texturaAlfilNegro, "BBishop_resized.png");
-    cargarTextura(texturaAlfilBlanco, "WBishop_resized.png");
+    //TEXTURAS DE ALFIL/BISHOP
+    Texture texturaAlfilBlanco, texturaAlfilNegro;
+    cargarTextura(texturaAlfilBlanco, "Alfil_Blanco.png");
+    cargarTextura(texturaAlfilNegro, "Alfil_Negro.png");
 
-    //Texturas de la reina/queen
-    Texture texturaReinaNegra, texturaReinaBlanca;
-    cargarTextura(texturaReinaNegra, "BQueen_resized.png");
-    cargarTextura(texturaReinaBlanca, "WQueen_resized.png");
+    //TEXCTURAS DE LA REINA/QUEEN
+    Texture texturaReinaBlanca, texturaReinaNegra;
+    cargarTextura(texturaReinaBlanca, "Reina_Blanca.png");
+    cargarTextura(texturaReinaNegra, "Reina_Negra.png");
 
-    //Texturas del rey/king
-    Texture texturaReyNegro, texturaReyBlanco;
-    cargarTextura(texturaReyNegro, "BKing_resized.png");
-    cargarTextura(texturaReyBlanco, "WKing_resized.png");
-
+    Texture texturaReyBlanco, texturaReyNegro;
+    cargarTextura(texturaReyBlanco, "Rey_Blanco.png");
+    cargarTextura(texturaReyNegro, "Rey_Negro.png");
     Sprite TorreNegra[2], TorreBlanca[2], CaballoNegro[2], CaballoBlanco[2], AlfilBlanco[2], AlfilNegro[2], ReinaNegra, ReinaBlanca, ReyBlanco, ReyNegro; //creacion de sprites
 
     //Posiciones iniciales de los peones
@@ -946,7 +944,7 @@ int main()
                             //tablero.displayTurno();
                             //turnoActual = tablero.cambiarTurno();
                             textoTurno.setString(turnoString);
-                        }          
+                        }
                         for(int i = 0; i < 8; i++)
                         {
                             if (peonesBlancos[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
@@ -968,7 +966,7 @@ int main()
                                 //turnoActual = tablero.cambiarTurno();
                                 textoTurno.setString(turnoString);
                             }
-                        }       
+                        }
                         for(int i = 0; i < 8; i++)
                         {
                             if (peonesNegros[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
@@ -1026,7 +1024,7 @@ int main()
                             //tablero.displayTurno();
                             //turnoActual = tablero.cambiarTurno();
                             textoTurno.setString(turnoString);
-                        }   
+                        }
                         for(int i = 0; i < 2; i++)
                         {
                             if (CaballoBlanco[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
@@ -1046,7 +1044,7 @@ int main()
                                 //tablero.displayTurno();
                                 //turnoActual = tablero.cambiarTurno();
                                 textoTurno.setString(turnoString);
-                                
+
                             }
                             if (CaballoNegro[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                             {
@@ -1066,7 +1064,7 @@ int main()
                                 //tablero.displayTurno();
                                 //turnoActual = tablero.cambiarTurno();
                                 textoTurno.setString(turnoString);
-                            }       
+                            }
                             if (AlfilBlanco[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
                             {
                                 MoverAlfilB[i] = true;
@@ -1085,7 +1083,7 @@ int main()
                                 //tablero.displayTurno();
                                 //turnoActual = tablero.cambiarTurno();
                                 textoTurno.setString(turnoString);
-                            }                 
+                            }
                             if (AlfilNegro[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                             {
                                 MoverAlfilN[i] = true;
@@ -1104,12 +1102,12 @@ int main()
                                 //tablero.displayTurno();
                                 //turnoActual = tablero.cambiarTurno();
                                 textoTurno.setString(turnoString);
-                            }     
+                            }
                             if (TorreBlanca[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
                             {
                                 MoverTorreB[i] = true;
                                 dx = pos.x - TorreBlanca[i].getPosition().x;
-                                dy = pos.y - TorreBlanca[i].getPosition().y;  
+                                dy = pos.y - TorreBlanca[i].getPosition().y;
                                 if (turnoActual)
                                 {
                                     turnoString = "Turno de Negras";
@@ -1120,9 +1118,9 @@ int main()
                                 }
 
                                 turnoActual = !turnoActual;
-                                //tablero.displayTurno();                             
+                                //tablero.displayTurno();
                                 textoTurno.setString(turnoString);
-                            }   
+                            }
                             if (TorreNegra[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                             {
                                 MoverTorreN[i] = true;
@@ -1142,7 +1140,7 @@ int main()
                                 //turnoActual = tablero.cambiarTurno();
                                 textoTurno.setString(turnoString);
                             }
-                        
+
                         }
 
                     }
@@ -1152,10 +1150,10 @@ int main()
                 {
                     if (event.mouseButton.button == Mouse::Left)
                     {
-                        MoverReinaB = false, MoverReinaN = false;  
+                        MoverReinaB = false, MoverReinaN = false;
                         MoverReyB = false, MoverReyN = false;
                     }
-                }                
+                }
                 if (event.type == Event::MouseButtonReleased)
                 {
                     if (event.mouseButton.button == Mouse::Left)
@@ -1168,7 +1166,7 @@ int main()
                         }
 
                     }
-                }  
+                }
                 if (event.type == Event::MouseButtonReleased)
                 {
                     if (event.mouseButton.button == Mouse::Left)
@@ -1186,15 +1184,15 @@ int main()
             {
                 ReinaBlanca.setPosition(pos.x - dx, pos.y - dy);
                 //funcion de restriccion de reina
-            }       
+            }
             if (MoverReinaN) // Movimiento de la reina Negra
             {
                 ReinaNegra.setPosition(pos.x - dx, pos.y - dy);
-            }  
+            }
             //int col_inicial[8], ren_inicial = 2, col_final[8], ren_final[8];
 
             for(int i = 0; i < 8; i++)
-            { 
+            {
                 //if(peonesBlancos[i].puedeMoverse(col_inicial[i + 1], ren_inicial, col_final[i+1], ren_final[i+1]))
                 //{
                     if (MoverPeonB[i]) //Movimiento de peones blancos
@@ -1206,21 +1204,21 @@ int main()
                         peonesNegros[i].setPosition(pos.x - dx, pos.y - dy);
                     }
                // }
-               // else  
+               // else
                // {
                //     peonesBlancos[i].setPosition(dx, dy);
                     //peonB[i].mover(col_inicial, ren_inicial);
                 //}
 
-            }       
+            }
             if (MoverReyB)
             {
                 ReyBlanco.setPosition(pos.x - dx, pos.y - dy);
-            }    
-            if (MoverReyN) 
+            }
+            if (MoverReyN)
             {
                 ReyNegro.setPosition(pos.x - dx, pos.y - dy);
-            }     
+            }
             for (int i = 0; i < 2; i++)
             {
                 if (MoverCaballoB[i])
@@ -1231,19 +1229,19 @@ int main()
                 if (MoverCaballoN[i])
                 {
                     CaballoNegro[i].setPosition(pos.x - dx, pos.y - dy);
-                }    
+                }
                 if (MoverAlfilB[i])
                 {
                     AlfilBlanco[i].setPosition(pos.x - dx, pos.y - dy);
-                }      
+                }
                 if (MoverAlfilN[i])
                 {
                     AlfilNegro[i].setPosition(pos.x - dx, pos.y - dy);
-                }          
+                }
                 if (MoverTorreB[i])
                 {
                     TorreBlanca[i].setPosition(pos.x - dx, pos.y - dy);
-                }   
+                }
                 if (MoverTorreN[i])
                 {
                     TorreNegra[i].setPosition(pos.x - dx, pos.y - dy);
@@ -1322,6 +1320,14 @@ int main()
 
             ventanaJuego.draw(botonExitGame);
             ventanaJuego.draw(textoTurno);
+
+            sf::Text textoo;
+            textoo.setFont(font);
+            textoo.setCharacterSize(40);
+            textoo.setFillColor(sf::Color::Black);
+            textoo.setString("Exit");
+            textoo.setPosition(865, 905);
+            ventanaJuego.draw(textoo);
 
             ventanaJuego.display();
         }
