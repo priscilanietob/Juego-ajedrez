@@ -847,6 +847,15 @@ int main()
             ventanaJuego.draw(ReyNegro);
             ventanaJuego.draw(botonExitGame);
 
+             // Texto del botón de salida
+            sf::Text textoo;
+            textoo.setFont(font);
+            textoo.setCharacterSize(40);
+            textoo.setFillColor(sf::Color::Black);
+            textoo.setString("Exit");
+            textoo.setPosition(865, 905);
+            ventanaJuego.draw(textoo);
+            
             ventanaJuego.display();
             }
         }
