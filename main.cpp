@@ -494,28 +494,36 @@ int main()
         cout << "Puede moverse a esa casilla." << endl;
     }*/
 
+    //carga la tipografia arial para las coordenadas
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf.ttf")) { //busca el archivo de font y despliega error si no se encuentra.
+        std::cerr << "Error al cargar el archivo de letra." << std::endl;
+        return 0;
+    }
+
     RenderWindow ventanaMenu(VideoMode(600, 330), "Main Menu"); //Crear ventana para el menú de inicio
 
-    Texture texturaFondo, texturaPlay, texturaSettings, texturaExit; //Crear las texturas de los botones
+    Texture texturaFondo, texturaPlay, texturaTutorial, texturaExit; //Crear las texturas de los botones
     cargarTextura(texturaFondo, "fondo.png");
     cargarTextura(texturaPlay, "Play_resized.png");
-    cargarTextura(texturaSettings, "Settings_resized.png");
+    cargarTextura(texturaTutorial, "Tutorial.png");
     cargarTextura(texturaExit, "Exit_resized.png");
 
-    Sprite spriteFondo(texturaFondo); //Crear el sprite del fondo
-    spriteFondo.setScale(
-    (float)ventanaMenu.getSize().x / spriteFondo.getTexture()->getSize().x,(float)ventanaMenu.getSize().y / spriteFondo.getTexture()->getSize().y); //Ajusta el tamaño del sprite del fondo a la ventana
-    Sprite play(texturaPlay), settings(texturaSettings), exit(texturaExit); //Posición de las texturas de botones (debe ser la misma que de los botones)
+
+    Sprite spriteFondo(texturaFondo);//Creo el sprite del fondo
+    spriteFondo.setScale((float)ventanaMenu.getSize().x / spriteFondo.getTexture()->getSize().x, (float)ventanaMenu.getSize().y / spriteFondo.getTexture()->getSize().y); //Ajusta el tamaño del sprite del fondo a la ventana
+
+    Sprite play(texturaPlay), Tutorial(texturaTutorial), Exit(texturaExit); //Posicion de las texturas de botones (debe ser la misma que de los botones)
     play.setPosition(100, 50);
-    settings.setPosition(100, 150);
-    exit.setPosition(100, 250);
+    Tutorial.setPosition(100, 150);
+    Exit.setPosition(100, 250);
 
     //Creación de botones
     RectangleShape botonPlay(Vector2f(200, 60)); //Tamaño y posición de los botones
     botonPlay.setPosition(100, 50);
 
-    RectangleShape botonSettings(Vector2f(200, 60));
-    botonSettings.setPosition(100, 150);
+    RectangleShape botonTutorial(Vector2f(200, 60));
+    botonTutorial.setPosition(100, 150);
 
     RectangleShape botonExit(Vector2f(200, 60));
     botonExit.setPosition(100, 250);
@@ -527,7 +535,7 @@ int main()
     RenderWindow ventanaJuego(VideoMode(1000, 1000), "Tablero");
     ventanaJuego.setVisible(false);
 
-    //Funciones que agarran las imagenes del archivo y las adjudican a las piezas
+    //Funciones que agarran las imagenes del archivo y las adjuntan a las piezas
     Texture texturaPeonBlanco, texturaPeonNegro;//TEXTURAS DE PEONES
             cargarTextura(texturaPeonBlanco, "Peon_blanco.png");
             cargarTextura(texturaPeonNegro, "Peon_negro.png");
@@ -593,44 +601,106 @@ int main()
 
 
     bool usoVentana = true;
-    while (usoVentana == true)
+
+    while (usoVentana)
     {
-        //Bucle principal del menu
+        // Bucle principal del menú
         while (ventanaMenu.isOpen())
         {
-            Event event;
-            while (ventanaMenu.pollEvent(event))
+            Event evento;
+            while (ventanaMenu.pollEvent(evento))
             {
-                //ventanaMenu.setMouseCursorGrabbed(true);
-
-                if (event.type == Event::Closed)
+                if (evento.type == Event::Closed)
                 {
                     ventanaMenu.close();
+                    usoVentana = false;
                 }
-                if (event.type == Event::MouseButtonPressed) //evento en el que revisa si das clic al mouse
+                else if (evento.type == Event::MouseButtonPressed)
                 {
-                    Vector2f mousePos = ventanaMenu.mapPixelToCoords(Mouse::getPosition(ventanaMenu)); //revisa la posicion del mouse dentro del menu
+                    if (evento.mouseButton.button == Mouse::Left)
+                    {
+                        Vector2i mousePos = Mouse::getPosition(ventanaMenu);
+                        if (botonPlay.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                        {
+                            ventanaMenu.close();
+                            ventanaJuego.create(VideoMode(1000, 1000), "Juego");
+                            usoVentana = false;
+                        }
+                        else if (botonExit.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                        {
+                            ventanaMenu.close();
+                            usoVentana = false;
+                        }
+                        else if (botonTutorial.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                        {
+                            // Crear la ventana del tutorial
+                            RenderWindow ventanaTutorial(VideoMode(880, 900), "Tutorial");
 
-                    if (botonPlay.getGlobalBounds().contains(mousePos))
-                    {
-                        ventanaMenu.close();
-                        ventanaJuego.setVisible(true);
-                        usoVentana = false;
-                    }
-                    if (botonExit.getGlobalBounds().contains(mousePos))
-                    {
-                        ventanaMenu.close();
+                            // Creación del botón de salida del tutorial
+                            RectangleShape botonExitTutorial(Vector2f(200, 60));
+                            botonExitTutorial.setPosition(650, 700);
+                            botonExitTutorial.setFillColor(Color::Red);
+
+                            // Cargar texturas para el tutorial
+                            Texture texturaTutorial1, texturaTutorial2;
+                            cargarTextura(texturaTutorial1, "Tutorial1.png");
+                            cargarTextura(texturaTutorial2, "Tutorial2.png");
+                            Sprite Tutorial1(texturaTutorial1), Tutorial2(texturaTutorial2);
+                            Tutorial1.setPosition(0, 0);
+                            Tutorial2.setPosition(0, 580);
+
+                            // Texto del botón de salida
+                            sf::Text texto;
+                            texto.setFont(font);
+                            texto.setCharacterSize(40);
+                            texto.setFillColor(sf::Color::Black);
+                            texto.setString("Exit");
+                            texto.setPosition(710, 705);
+
+                            while (ventanaTutorial.isOpen())
+                            {
+                                Event eventoTutorial;
+                                while (ventanaTutorial.pollEvent(eventoTutorial))
+                                {
+                                    if (eventoTutorial.type == Event::Closed)
+                                        ventanaTutorial.close();
+                                    else if (eventoTutorial.type == Event::MouseButtonPressed)
+                                    {
+                                        if (eventoTutorial.mouseButton.button == Mouse::Left)
+                                        {
+                                            Vector2i mousePosTutorial = Mouse::getPosition(ventanaTutorial);
+                                            if (botonExitTutorial.getGlobalBounds().contains(mousePosTutorial.x, mousePosTutorial.y))
+                                            {
+                                                ventanaTutorial.close();
+                                            }
+                                        }
+                                    }
+                                }
+
+                                ventanaTutorial.clear();
+                                ventanaTutorial.draw(Tutorial1);
+                                ventanaTutorial.draw(Tutorial2);
+                                ventanaTutorial.draw(botonExitTutorial);
+                                ventanaTutorial.draw(texto);
+                                ventanaTutorial.display();
+                            }
+                        }
                     }
                 }
             }
+
+            // Dibuja los elementos de la ventana del menú
             ventanaMenu.clear();
             ventanaMenu.draw(spriteFondo);
+            ventanaMenu.draw(botonPlay);
             ventanaMenu.draw(play);
-            ventanaMenu.draw(settings);
-            ventanaMenu.draw(exit);
+            ventanaMenu.draw(botonTutorial);
+            ventanaMenu.draw(Tutorial);
+            ventanaMenu.draw(botonExit);
+            ventanaMenu.draw(Exit);
             ventanaMenu.display();
         }
-    }
+
     while (usoVentana == false)
     {
         // Bucle principal del juego
@@ -702,13 +772,6 @@ int main()
                     colorBlanco = !colorBlanco;
                 }
                 colorBlanco = !colorBlanco;
-            }
-
-            // Cargar la tipografía arial para las coordenadas
-            Font font;
-            if (!font.loadFromFile("arial.ttf.ttf")) {
-                cerr << "Error al cargar el archivo de letra." << endl;
-                return 0;
             }
 
             // Define el texto, su tamaño y color
@@ -785,8 +848,8 @@ int main()
             ventanaJuego.draw(botonExitGame);
 
             ventanaJuego.display();
+            }
         }
     }
-
-    return 0;
+return 0;
 }
