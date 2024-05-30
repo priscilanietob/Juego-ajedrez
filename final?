@@ -1,0 +1,1330 @@
+#include <SFML/Graphics.hpp>
+#include <iostream>
+using namespace std;
+using namespace sf;
+
+
+class Tablero {
+    int columna;
+    int renglon;
+    enum Color { Blanca, Negra };
+    bool turnoActual = true;
+
+public:
+    Tablero() {}
+    ~Tablero() {}
+
+    //funcion de registro de jugadas
+
+    //funcion de cambio de turno
+    bool cambiarTurno()
+    {
+        if (turnoActual == true)
+        {
+            return turnoActual == !turnoActual;
+        }
+        else
+        {
+            return !turnoActual == turnoActual;
+        }
+    }
+
+    void displayTurno() 
+    {
+        if (turnoActual == true)
+        {
+            cout << "Turno de Negras" << endl;
+            turnoActual = !turnoActual;
+        }
+        else
+        {
+            cout << "Turno de Blancas" << endl;
+            turnoActual = !turnoActual;
+        }
+ 
+    }
+    string getTurnoATexto() const
+    {
+        return (turnoActual == true) ? "Blanco" : "Negro";
+    }
+};
+//caracteristicas generales de todas las piezas
+
+class Pieza {
+public:
+    enum Color { Blanca, Negra };
+    enum Tipo { Peon, Caballo, Alfil, Torre, Dama, Rey };
+
+    Color color;
+    Tipo tipo;
+
+    //constructor y destructor
+    Pieza(Color _color, Tipo _tipo) : color(_color), tipo(_tipo) {}
+    Pieza() {}
+    ~Pieza() {}
+
+    //gets
+    char getColor()const { return color; }
+    char getTipo()const { return tipo; }
+
+    //movimientos invalidos para cualquier pieza
+    bool dentroTablero(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        if (col_final > 0 && col_final <= 8 && ren_final > 0 && ren_final <= 8) {
+            return true;
+        }
+        else {
+            cout << "Jugada invalida. Fuera del tablero." << endl;
+            return false;
+        }
+    }
+
+    bool esJaque() {
+        //revisar si esta en jaque
+        return false;
+    }
+
+    bool esJaquemate() {
+        //revisar si esta en jaque mate
+        return false;
+    }
+
+    bool casillaOcupada(Pieza* tablero[8][8], int col, int ren) const {
+        return tablero[col - 1][ren - 1] != nullptr; //se le quita uno por lo de los indices
+    }
+
+    //casilla ocupada por otro color
+    bool casillaOcupadaOponente(Pieza* tablero[8][8], int col, int ren, Color miColor) const {
+        if (tablero[col - 1][ren - 1] != nullptr) {
+            return tablero[col - 1][ren - 1]->color != miColor;
+        }
+        return false;
+    }
+
+    void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        col_inicial = col_final;
+        ren_inicial = ren_final;
+    }
+
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final)
+    {
+        return true;
+    }
+
+};
+class tableroo {
+public:
+    unique_ptr<Pieza> tablero[8][8];
+
+    tableroo() {
+        // Inicializar el tablero con nullptr
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                tablero[i][j] = nullptr;
+            }
+        }
+    }
+
+    Pieza* obtenerPieza(int col, int ren) const {
+        return tablero[col][ren].get();
+    }
+
+    void colocarPieza(int col, int ren, unique_ptr<Pieza> pieza) {
+        tablero[col][ren] = move(pieza);
+    }
+
+    bool estaEnJaque(Pieza::Color color) {
+        int rey_col = -1, rey_ren = -1;
+
+        // Buscar el rey del color especificado
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                Pieza* pieza = obtenerPieza(i, j);
+                if (pieza && pieza->getTipo() == Pieza::Rey && pieza->getColor() == color) {
+                    rey_col = i;
+                    rey_ren = j;
+                    break;
+                }
+            }
+            if (rey_col != -1) break;
+        }
+        if (rey_col == -1) return false;
+
+        // Verificar si alguna pieza contraria puede capturar al rey
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                Pieza* pieza = obtenerPieza(i, j);
+                if (pieza && pieza->getColor() != color) {
+                    if (pieza->puedeMoverse(i, j, rey_col, rey_ren)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+};
+
+class Peon : public Pieza {
+public:
+    //constructor y destructor
+    Peon(Color _color) :
+        Pieza(_color, Tipo::Peon) {}
+    ~Peon() {}
+
+    //para revisar si se puede mover a cierta casilla, independientemente de si esta ocupada o no
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        //revisar que no este en jaque/mate y q se mueva dentro del tablero
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+            //q se mueva solo uno hacia en frente
+            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                return true;
+            }
+            else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == Color::Negra) {
+                return true;
+                //q avance dos casillas cuando esta en posicion inicial
+            }
+            else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == Color::Blanca) {
+                return true;
+            }
+            else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == Color::Negra) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
+        //revisar que no este en jaque/mate y q se mueva dentro del tablero Y q no este ocupada la casilla
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) { // && !(Pieza::casillaOcupada(tablero, col_final, ren_final))
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                //peon blnaco
+                if (col_inicial == col_final + 1 && ren_inicial == ren_final + 1 || ren_inicial == ren_final - 1) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El peón blanco capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+                else if (col_inicial == col_final - 1 && ren_inicial == ren_final + 1 || ren_inicial == ren_final - 1) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El peón negro capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+            }
+
+            //JUGADA REGULAR
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)) { //que este vacua la casilla
+                //q se mueva solo uno hacia en frente
+                if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                    cout << "El peon blanco se movio una casilla hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+                else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == Color::Negra) {
+                    cout << "El peon negro se movio una casilla hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+
+                //q avance dos casillas cuando esta en posicion inicial
+                }
+                else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == Color::Blanca) {
+                    cout << "El peon blanco se movio dos casillas hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+
+                }
+                else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == Color::Negra) {
+                    cout << "El peon negro se movio dos casillas hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
+            }
+        }
+        else {
+            cout << "Jugada invalida." << endl;
+        }
+    }
+};
+
+class Caballo : public Pieza {
+public:
+    //constructor y destructor
+    Caballo(Color _color) :
+        Pieza(_color, Tipo::Caballo) {}
+    ~Caballo() {}
+
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+            if ((col_final == col_inicial - 1 || col_inicial + 1) && (ren_final == ren_inicial + 2 || ren_final == ren_inicial - 2)) {
+                return true;
+            }
+            else if ((ren_final == ren_inicial - 1 || ren_inicial + 1) && (col_final == col_inicial + 2 || col_final == col_inicial - 2)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if (puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El caballo capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+                //JUGADA NORMAL
+            }
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)) {
+                if ((col_final == col_inicial - 1 || col_inicial + 1) && (ren_final == ren_inicial + 2 || ren_final == ren_inicial - 2)) {
+                    cout << "El caballo se movio hacia el norte o el sur." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else if ((ren_final == ren_inicial - 1 || ren_inicial + 1) && (col_final == col_inicial + 2 || col_final == col_inicial - 2)) {
+                    cout << "El caballo se movio al este u oeste." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
+            }
+        }
+        else {
+            cout << "Jugada invalida." << endl;
+        }
+    }
+};
+
+class Alfil : public Pieza {
+public:
+    //constructor y destructor
+    Alfil(Color _color) :
+        Pieza(_color, Tipo::Alfil) {}
+    ~Alfil() {}
+
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        //reglas de movimiento especificas del alfil
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        //obetner valor absoluto para que los signos no afecten la igualdad
+        if (renglonDiff < 0) {
+            renglonDiff = renglonDiff * (-1);
+        }
+
+        if (columnaDiff < 0) {
+            columnaDiff = columnaDiff * (-1);
+        }
+
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+            if (columnaDiff == renglonDiff) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
+        //reglas de movimiento especificas del alfil
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+
+
+        //obetner valor absoluto para que los signos no afecten la igualdad
+        if (renglonDiff < 0) {
+            renglonDiff = renglonDiff * (-1);
+        }
+
+        if (columnaDiff < 0) {
+            columnaDiff = columnaDiff * (-1);
+        }
+
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if (puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El alfil capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+                //JUGADA NORMAL
+            }
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)) {
+                if (columnaDiff == renglonDiff) {
+                    cout << "El alfil se movio." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
+            }
+            else {
+                cout << "Jugada invalida." << endl;
+            }
+        }
+    }
+};
+
+class Torre : public Pieza {
+public:
+    //constructor y destructor
+    Torre(Color _color) :
+        Pieza(_color, Tipo::Torre) {}
+    ~Torre() {}
+
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        //reglas de movimiento especificas de la torre
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+            if (col_inicial == col_final || ren_inicial == ren_final) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
+        //reglas de movimiento especificas de la tore
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if (puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "La torre capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+                //JUGADA NORMAL
+            }
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)) {
+                //juagda normal
+                if (col_inicial == col_final || ren_inicial == ren_final) {
+                    cout << "La torre se movio." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
+            }
+        }
+        else {
+            cout << "Jugada invalida." << endl;
+        }
+    }
+};
+
+class Dama : public Pieza {
+public:
+    //constructor y destructor
+    Dama(Color _color) :
+        Pieza(_color, Tipo::Dama) {}
+    ~Dama() {}
+
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if (renglonDiff < 0) {
+            renglonDiff = renglonDiff * (-1);
+        }
+        if (columnaDiff < 0) {
+            columnaDiff = columnaDiff * (-1);
+        }
+
+        //reglas de movimiento especificas de la dama
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+            if (columnaDiff == renglonDiff) {
+                return true;
+            }
+            else if (col_inicial == col_final || ren_inicial == ren_final) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if (renglonDiff < 0) {
+            renglonDiff = renglonDiff * (-1);
+        }
+        if (columnaDiff < 0) {
+            columnaDiff = columnaDiff * (-1);
+        }
+
+        //reglas de movimiento especificas de la dama
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if (puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "La dama capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+                //JUGADA NORMAL
+            }
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)) {
+                //jugada normal
+                if (columnaDiff == renglonDiff) {
+                    cout << "La dama se movio en diagonal." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else if (col_inicial == col_final || ren_inicial == ren_final) {
+                    cout << "La dama se movio en horizontal o vertical." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
+            }
+        }
+        else {
+            cout << "Jugada invalida." << endl;
+        }
+    }
+};
+
+class Rey : public Pieza {
+public:
+    //constructor y destructor
+    Rey(Color _color) :
+        Pieza(_color, Tipo::Rey) {}
+    ~Rey() {}
+
+    bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final) {
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if (renglonDiff < 0) {
+            renglonDiff = renglonDiff * (-1);
+        }
+        if (columnaDiff < 0) {
+            columnaDiff = columnaDiff * (-1);
+        }
+
+        //reglas de movimiento especificas del rey
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+            if (columnaDiff <= 1 && renglonDiff <= 1) { //se asegura que solo se mueva una casilla
+                if (columnaDiff == renglonDiff) {
+                    return true;
+                }
+                else if (col_inicial == col_final || ren_inicial == ren_final) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
+        int columnaDiff = col_final - col_inicial;
+        int renglonDiff = ren_final - ren_inicial;
+        if (renglonDiff < 0) {
+            renglonDiff = renglonDiff * (-1);
+        }
+        if (columnaDiff < 0) {
+            columnaDiff = columnaDiff * (-1);
+        }
+
+        //reglas de movimiento especificas del rey
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if (puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El rey capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+                //JUGADA NORMAL
+            }
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final))
+                //jugada normal
+                if (columnaDiff <= 1 && renglonDiff <= 1) { //se asegura que solo se mueva una casilla
+                    if (columnaDiff == renglonDiff) {
+                        cout << "El rey se movio en alguna diagonal." << endl;
+                        Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                        //cambio turno
+                    }
+                    else if (col_inicial == col_final || ren_inicial == ren_final) {
+                        cout << "El rey se movio en horizontal o vertical." << endl;
+                        Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                        //cambio turno
+                    }
+                    else {
+                        cout << "Jugada invalida." << endl;
+                    }
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
+        }
+        else {
+            cout << "Jugada invalida." << endl;
+        }
+    }
+};
+
+
+// Función para cargar texturas desde un archivo
+bool cargarTextura(Texture& textura, const string& archivo) {
+    if (!textura.loadFromFile(archivo)) {
+        cerr << "Error al cargar el archivo " << archivo << endl;
+        return false;
+    }
+    return true;
+}
+
+int main()
+{
+    // Inicialización del tablero
+    Tablero tablero;
+    //tablero.displayTurno();
+    //Peon peonB[8];
+    bool turnoActual = true;
+
+    bool MoverReinaB = false, MoverReinaN = false; //para saber si una pieza se esta moviendo
+    bool MoverPeonB[8] = { false }, MoverPeonN[8] = { false }; 
+    bool MoverReyB = false, MoverReyN = false;
+    bool MoverTorreB[2] = { false }, MoverTorreN[2] = { false };
+    bool MoverCaballoB[2] = { false }, MoverCaballoN[2] = { false };
+    bool MoverAlfilB[2] = { false }, MoverAlfilN[2] = { false };
+
+    float dx = 0, dy = 0; //las coordenadas de las piezas
+
+    Font font;
+    if (!font.loadFromFile("arial.ttf.ttf"))
+    { //busca el archivo de font y despliega error si no se encuentra.
+        cerr << "Error al cargar el archivo de letra." << std::endl;
+        return 0;
+    }
+
+    RenderWindow ventanaMenu(VideoMode(600, 330), "Main Menu"); //Crear ventana para el menú de inicio
+
+    Texture texturaFondo, texturaPlay, texturaTutorial, texturaExit; //Crear las texturas de los botones
+    cargarTextura(texturaFondo, "fondo.png");
+    cargarTextura(texturaPlay, "Play_resized.png");
+    cargarTextura(texturaTutorial, "Tutorial.png");
+    cargarTextura(texturaExit, "Exit_resized.png");
+
+    Sprite spriteFondo(texturaFondo); //Crear el sprite del fondo
+    spriteFondo.setScale(
+        (float)ventanaMenu.getSize().x / spriteFondo.getTexture()->getSize().x, (float)ventanaMenu.getSize().y / spriteFondo.getTexture()->getSize().y); //Ajusta el tamaño del sprite del fondo a la ventana
+    Sprite play(texturaPlay), Tutorial(texturaTutorial), exit(texturaExit); //Posición de las texturas de botones (debe ser la misma que de los botones)
+    play.setPosition(100, 50);
+    Tutorial.setPosition(100, 150);
+    exit.setPosition(100, 250);
+
+    //Creación de botones
+    RectangleShape botonPlay(Vector2f(200, 60)); //Tamaño y posición de los botones
+    botonPlay.setPosition(100, 50);
+
+    RectangleShape botonSettings(Vector2f(200, 60));
+    botonSettings.setPosition(100, 150);
+
+    RectangleShape botonExit(Vector2f(200, 60));
+    botonExit.setPosition(100, 250);
+
+    RectangleShape botonExitGame(Vector2f(100, 60));
+    botonExitGame.setPosition(850, 900);
+    botonExitGame.setFillColor(Color::Red);
+
+    RectangleShape botonTutorial(Vector2f(200, 60));
+    botonTutorial.setPosition(100, 150);
+
+    RenderWindow ventanaJuego(VideoMode(1000, 1000), "Tablero");
+    ventanaJuego.setVisible(false);
+
+    //Funciones que agarran las imagenes del archivo y las adjudican a las piezas 
+    Texture texturaPeonBlanco, texturaPeonNegro; // Texturas de peones
+    cargarTextura(texturaPeonBlanco, "peon_blanco_resized.png");
+    cargarTextura(texturaPeonNegro, "peon_negro_resized.png");
+
+    //Texturas de torres/rooks
+    Texture texturaTorreNegra, texturaTorreBlanca;
+    cargarTextura(texturaTorreNegra, "Rook B_resized.png");
+    cargarTextura(texturaTorreBlanca, "Rook W_resized.png");
+
+    //Texturas de caballos/knights
+    Texture texturaCaballoNegro, texturaCaballoBlanco;
+    cargarTextura(texturaCaballoNegro, "Caballo_Negro.png");
+    cargarTextura(texturaCaballoBlanco, "WKnight_resized.png");
+
+    //Texturas de alfiles/bishops
+    Texture texturaAlfilNegro, texturaAlfilBlanco;
+    cargarTextura(texturaAlfilNegro, "BBishop_resized.png");
+    cargarTextura(texturaAlfilBlanco, "WBishop_resized.png");
+
+    //Texturas de la reina/queen
+    Texture texturaReinaNegra, texturaReinaBlanca;
+    cargarTextura(texturaReinaNegra, "BQueen_resized.png");
+    cargarTextura(texturaReinaBlanca, "WQueen_resized.png");
+
+    //Texturas del rey/king
+    Texture texturaReyNegro, texturaReyBlanco;
+    cargarTextura(texturaReyNegro, "BKing_resized.png");
+    cargarTextura(texturaReyBlanco, "WKing_resized.png");
+
+    Sprite TorreNegra[2], TorreBlanca[2], CaballoNegro[2], CaballoBlanco[2], AlfilBlanco[2], AlfilNegro[2], ReinaNegra, ReinaBlanca, ReyBlanco, ReyNegro; //creacion de sprites
+
+    //Posiciones iniciales de los peones
+    const int numPeones = 8;
+    Sprite peonesBlancos[numPeones], peonesNegros[numPeones]; //creacion de sprites de los peones y como son 8 se creo en forma de arreglo
+
+    for (int i = 0; i < numPeones; i++) //ciclito para establecer la textura y posicion de cada peon
+    {
+        peonesBlancos[i].setTexture(texturaPeonBlanco);
+        peonesNegros[i].setTexture(texturaPeonNegro);
+        peonesBlancos[i].setPosition(i * 100, 600);
+        peonesNegros[i].setPosition(i * 100, 100);
+    }
+
+
+    for (int i = 0; i < 2; i++)
+    {
+        TorreBlanca[i].setTexture(texturaTorreBlanca);
+        TorreNegra[i].setTexture(texturaTorreNegra);
+        CaballoBlanco[i].setTexture(texturaCaballoBlanco);
+        CaballoNegro[i].setTexture(texturaCaballoNegro);
+        AlfilBlanco[i].setTexture(texturaAlfilBlanco);
+        AlfilNegro[i].setTexture(texturaAlfilNegro);
+
+        TorreNegra[i].setPosition(i * 700, 0);
+        TorreBlanca[i].setPosition(i * 700, 700);
+        CaballoNegro[i].setPosition(i * 500 + 100, 0);
+        CaballoBlanco[i].setPosition(i * 500 + 100, 700);
+        AlfilNegro[i].setPosition(i * 300 + 200, 0);
+        AlfilBlanco[i].setPosition(i * 300 + 200, 700);
+    }
+
+    //establecer posicion de la reina y rey
+    ReinaBlanca.setTexture(texturaReinaBlanca);
+    ReinaNegra.setTexture(texturaReinaNegra);
+    ReinaNegra.setPosition(300, 0);
+    ReinaBlanca.setPosition(300, 700);
+
+    ReyBlanco.setTexture(texturaReyBlanco);
+    ReyNegro.setTexture(texturaReyNegro);
+    ReyNegro.setPosition(400, 0);
+    ReyBlanco.setPosition(400, 700);
+
+    bool Menu = true;
+
+    Text textoTurno;
+    textoTurno.setFont(font);
+    textoTurno.setCharacterSize(20);
+    textoTurno.setFillColor(Color::White);
+    textoTurno.setPosition(850, 10);
+    string turnoString = "Turno de Blancas";
+    textoTurno.setString("turnoString");
+
+    while (ventanaMenu.isOpen() || ventanaJuego.isOpen())
+    {
+        if (Menu)
+        {
+            Event event;
+            while (ventanaMenu.pollEvent(event))
+            {
+                if (event.type == Event::Closed)
+                {
+                    ventanaMenu.close();
+                }
+                if (event.type == Event::MouseButtonPressed)
+                {
+                    Vector2f mousePos = ventanaMenu.mapPixelToCoords(Mouse::getPosition(ventanaMenu));
+                    if (botonPlay.getGlobalBounds().contains(mousePos))
+                    {
+                        ventanaMenu.setVisible(false);
+                        ventanaJuego.setVisible(true);
+                        Menu = false;
+                        cout << "Turno de Blancas " << endl;
+
+                    }
+                    if (botonExit.getGlobalBounds().contains(mousePos))
+                    {
+                        ventanaMenu.close();
+                    }
+                    else if (botonTutorial.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                    {
+                        // Crear la ventana del tutorial
+                        RenderWindow ventanaTutorial(VideoMode(880, 900), "Tutorial");
+
+                        // Creación del botón de salida del tutorial
+                        RectangleShape botonExitTutorial(Vector2f(200, 60));
+                        botonExitTutorial.setPosition(650, 700);
+                        botonExitTutorial.setFillColor(Color::Red);
+
+                        // Cargar texturas para el tutorial
+                        Texture texturaTutorial1, texturaTutorial2;
+                        cargarTextura(texturaTutorial1, "Tutorial1.png");
+                        cargarTextura(texturaTutorial2, "Tutorial2.png");
+                        Sprite Tutorial1(texturaTutorial1), Tutorial2(texturaTutorial2);
+                        Tutorial1.setPosition(0, 0);
+                        Tutorial2.setPosition(0, 580);
+
+                        // Texto del botón de salida
+                        Text texto;
+                        texto.setFont(font);
+                        texto.setCharacterSize(40);
+                        texto.setFillColor(sf::Color::Black);
+                        texto.setString("Exit");
+                        texto.setPosition(710, 705);
+
+                        while (ventanaTutorial.isOpen())
+                        {
+                            Event eventoTutorial;
+                            while (ventanaTutorial.pollEvent(eventoTutorial))
+                            {
+                                if (eventoTutorial.type == Event::Closed)
+                                    ventanaTutorial.close();
+                                else if (eventoTutorial.type == Event::MouseButtonPressed)
+                                {
+                                    if (eventoTutorial.mouseButton.button == Mouse::Left)
+                                    {
+                                        Vector2i mousePosTutorial = Mouse::getPosition(ventanaTutorial);
+                                        if (botonExitTutorial.getGlobalBounds().contains(mousePosTutorial.x, mousePosTutorial.y))
+                                        {
+                                            ventanaTutorial.close();
+                                        }
+                                    }
+                                }
+                            }
+
+                            ventanaTutorial.clear();
+                            ventanaTutorial.draw(Tutorial1);
+                            ventanaTutorial.draw(Tutorial2);
+                            ventanaTutorial.draw(botonExitTutorial);
+                            ventanaTutorial.draw(texto);
+                            ventanaTutorial.display();
+                        }
+                    }
+                }
+            }
+            ventanaMenu.clear();
+            ventanaMenu.draw(spriteFondo);
+            ventanaMenu.draw(play);
+            ventanaMenu.draw(Tutorial);
+            ventanaMenu.draw(exit);
+            ventanaMenu.display();
+        }
+        else
+        {
+            Event event;
+            while (ventanaJuego.pollEvent(event))
+            {
+                if (event.type == Event::Closed)
+                {
+                    ventanaJuego.close();
+                }
+                ///////drag and drop//////////////
+                if (event.type == Event::MouseButtonPressed)
+                {
+                    if (event.mouseButton.button == Mouse::Left)
+                    {
+                        Vector2i pos = Mouse::getPosition(ventanaJuego);
+                        if (botonExitGame.getGlobalBounds().contains(pos.x, pos.y))
+                        {
+                            ventanaJuego.setVisible(false);
+                            ventanaMenu.setVisible(true);
+                            Menu = true;
+                        }
+                        if (ReinaBlanca.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
+                        {
+                            MoverReinaB = true;
+                            dx = pos.x - ReinaBlanca.getPosition().x;
+                            dy = pos.y - ReinaBlanca.getPosition().y;
+
+                            if (turnoActual)
+                            {
+                                turnoString = "Turno de Negras";
+                            }
+                            else
+                            {
+                                turnoString = "Turno de Blancas";
+                            }
+                            turnoActual = !turnoActual;
+                           // turnoActual = tablero.cambiarTurno();
+                            textoTurno.setString(turnoString);
+                        }
+                        if (ReinaNegra.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
+                        {
+                            MoverReinaN = true;
+                            dx = pos.x - ReinaNegra.getPosition().x;
+                            dy = pos.y - ReinaNegra.getPosition().y;
+
+                            if (turnoActual)
+                            {
+                                turnoString = "Turno de Negras";
+                            }
+                            else
+                            {
+                                turnoString = "Turno de Blancas";
+                            }
+
+                            turnoActual = !turnoActual;
+                            //tablero.displayTurno();
+                            //turnoActual = tablero.cambiarTurno();
+                            textoTurno.setString(turnoString);
+                        }          
+                        for(int i = 0; i < 8; i++)
+                        {
+                            if (peonesBlancos[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
+                            {
+                                MoverPeonB[i] = true;
+                                dx = pos.x - peonesBlancos[i].getPosition().x;
+                                dy = pos.y - peonesBlancos[i].getPosition().y;
+
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                            }
+                        }       
+                        for(int i = 0; i < 8; i++)
+                        {
+                            if (peonesNegros[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
+                            {
+                                MoverPeonN[i] = true;
+                                dx = pos.x - peonesNegros[i].getPosition().x;
+                                dy = pos.y - peonesNegros[i].getPosition().y;
+
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                            }
+                        }
+                        if (ReyNegro.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
+                        {
+                            MoverReyN = true;
+                            dx = pos.x - ReyNegro.getPosition().x;
+                            dy = pos.y - ReyNegro.getPosition().y;
+                            if (turnoActual)
+                            {
+                                turnoString = "Turno de Negras";
+                            }
+                            else
+                            {
+                                turnoString = "Turno de Blancas";
+                            }
+                            turnoActual = !turnoActual;
+                            //tablero.displayTurno();
+                            //turnoActual = tablero.cambiarTurno();
+                            textoTurno.setString(turnoString);
+                        }
+                        if (ReyBlanco.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
+                        {
+                            MoverReyB = true;
+                            dx = pos.x - ReyBlanco.getPosition().x;
+                            dy = pos.y - ReyBlanco.getPosition().y;
+                            if (turnoActual)
+                            {
+                                turnoString = "Turno de Negras";
+                            }
+                            else
+                            {
+                                turnoString = "Turno de Blancas";
+                            }
+                            turnoActual = !turnoActual;
+                            //tablero.displayTurno();
+                            //turnoActual = tablero.cambiarTurno();
+                            textoTurno.setString(turnoString);
+                        }   
+                        for(int i = 0; i < 2; i++)
+                        {
+                            if (CaballoBlanco[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
+                            {
+                                MoverCaballoB[i] = true;
+                                dx = pos.x - CaballoBlanco[i].getPosition().x;
+                                dy = pos.y - CaballoBlanco[i].getPosition().y;
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                                
+                            }
+                            if (CaballoNegro[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
+                            {
+                                MoverCaballoN[i] = true;
+                                dx = pos.x - CaballoNegro[i].getPosition().x;
+                                dy = pos.y - CaballoNegro[i].getPosition().y;
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                            }       
+                            if (AlfilBlanco[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
+                            {
+                                MoverAlfilB[i] = true;
+                                dx = pos.x - AlfilBlanco[i].getPosition().x;
+                                dy = pos.y - AlfilBlanco[i].getPosition().y;
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                            }                 
+                            if (AlfilNegro[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
+                            {
+                                MoverAlfilN[i] = true;
+                                dx = pos.x - AlfilNegro[i].getPosition().x;
+                                dy = pos.y - AlfilNegro[i].getPosition().y;
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                            }     
+                            if (TorreBlanca[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
+                            {
+                                MoverTorreB[i] = true;
+                                dx = pos.x - TorreBlanca[i].getPosition().x;
+                                dy = pos.y - TorreBlanca[i].getPosition().y;  
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();                             
+                                textoTurno.setString(turnoString);
+                            }   
+                            if (TorreNegra[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
+                            {
+                                MoverTorreN[i] = true;
+                                dx = pos.x - TorreNegra[i].getPosition().x;
+                                dy = pos.y - TorreNegra[i].getPosition().y;
+                                if (turnoActual)
+                                {
+                                    turnoString = "Turno de Negras";
+                                }
+                                else
+                                {
+                                    turnoString = "Turno de Blancas";
+                                }
+
+                                turnoActual = !turnoActual;
+                                //tablero.displayTurno();
+                                //turnoActual = tablero.cambiarTurno();
+                                textoTurno.setString(turnoString);
+                            }
+                        
+                        }
+
+                    }
+                }
+
+                if (event.type == Event::MouseButtonReleased)
+                {
+                    if (event.mouseButton.button == Mouse::Left)
+                    {
+                        MoverReinaB = false, MoverReinaN = false;  
+                        MoverReyB = false, MoverReyN = false;
+                    }
+                }                
+                if (event.type == Event::MouseButtonReleased)
+                {
+                    if (event.mouseButton.button == Mouse::Left)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            MoverCaballoB[i] = false, MoverCaballoN[i] = false;
+                            MoverAlfilB[i] = false, MoverAlfilN[i] = false;
+                            MoverTorreB[i] = false, MoverTorreN[i] = false;
+                        }
+
+                    }
+                }  
+                if (event.type == Event::MouseButtonReleased)
+                {
+                    if (event.mouseButton.button == Mouse::Left)
+                    {
+                        for(int i = 0; i < 8; i++)
+                        {
+                            MoverPeonB[i] = false;
+                            MoverPeonN[i] = false;
+                        }
+                    }
+                }
+            }
+            Vector2i pos = Mouse::getPosition(ventanaJuego);
+            if (MoverReinaB) // Movimiento de la reina Blanca
+            {
+                ReinaBlanca.setPosition(pos.x - dx, pos.y - dy);
+                //funcion de restriccion de reina
+            }       
+            if (MoverReinaN) // Movimiento de la reina Negra
+            {
+                ReinaNegra.setPosition(pos.x - dx, pos.y - dy);
+            }  
+            //int col_inicial[8], ren_inicial = 2, col_final[8], ren_final[8];
+
+            for(int i = 0; i < 8; i++)
+            { 
+                //if(peonesBlancos[i].puedeMoverse(col_inicial[i + 1], ren_inicial, col_final[i+1], ren_final[i+1]))
+                //{
+                    if (MoverPeonB[i]) //Movimiento de peones blancos
+                    {
+                        peonesBlancos[i].setPosition(pos.x - dx, pos.y - dy);
+                    }
+                    if (MoverPeonN[i]) //Movimiento de peones negros
+                    {
+                        peonesNegros[i].setPosition(pos.x - dx, pos.y - dy);
+                    }
+               // }
+               // else  
+               // {
+               //     peonesBlancos[i].setPosition(dx, dy);
+                    //peonB[i].mover(col_inicial, ren_inicial);
+                //}
+
+            }       
+            if (MoverReyB)
+            {
+                ReyBlanco.setPosition(pos.x - dx, pos.y - dy);
+            }    
+            if (MoverReyN) 
+            {
+                ReyNegro.setPosition(pos.x - dx, pos.y - dy);
+            }     
+            for (int i = 0; i < 2; i++)
+            {
+                if (MoverCaballoB[i])
+                {
+                    CaballoBlanco[i].setPosition(pos.x - dx, pos.y - dy);
+
+                }
+                if (MoverCaballoN[i])
+                {
+                    CaballoNegro[i].setPosition(pos.x - dx, pos.y - dy);
+                }    
+                if (MoverAlfilB[i])
+                {
+                    AlfilBlanco[i].setPosition(pos.x - dx, pos.y - dy);
+                }      
+                if (MoverAlfilN[i])
+                {
+                    AlfilNegro[i].setPosition(pos.x - dx, pos.y - dy);
+                }          
+                if (MoverTorreB[i])
+                {
+                    TorreBlanca[i].setPosition(pos.x - dx, pos.y - dy);
+                }   
+                if (MoverTorreN[i])
+                {
+                    TorreNegra[i].setPosition(pos.x - dx, pos.y - dy);
+                }
+
+            }
+            ventanaJuego.clear();
+
+            // Dibujar el tablero
+            RectangleShape cuadro(Vector2f(100, 100)); // Tamaño de cada cuadro
+            bool colorBlanco = true;
+            for (int i = 0; i < 8; ++i)
+            {
+                for (int j = 0; j < 8; ++j)
+                {
+                    cuadro.setFillColor(colorBlanco ? Color::White : Color::Black);
+                    cuadro.setPosition(j * 100, i * 100);
+                    ventanaJuego.draw(cuadro);
+                    colorBlanco = !colorBlanco;
+                }
+                colorBlanco = !colorBlanco;
+            }
+
+            // Define el texto, su tamaño y color
+            Text text;
+            text.setFont(font);
+            text.setCharacterSize(30);
+            text.setFillColor(Color::White);
+
+            // Posiciones iniciales para letras y numeros
+            int letrasss = 30;
+            int numeros = 40;
+
+            // Dibujar las letras (A-H)
+            for (int i = 0; i < 8; ++i)
+            {
+                char letras = 'A' + i;
+                text.setString(string(1, letras));
+                text.setPosition(letrasss + i * 100, 800);
+                ventanaJuego.draw(text);
+            }
+
+            // Dibujar los numeros (1-8)
+            for (int i = 0; i < 8; ++i)
+            {
+                char num = '8' - i;
+                text.setString(string(1, num));
+                text.setPosition(815, numeros + i * 100);
+                ventanaJuego.draw(text);
+            }
+
+            for (int i = 0; i < numPeones; i++)
+            {
+                ventanaJuego.draw(peonesBlancos[i]);
+                ventanaJuego.draw(peonesNegros[i]);
+            }
+
+            // Dibujar los rooks, caballos y bishops
+            for (int i = 0; i < 2; i++)
+            {
+                ventanaJuego.draw(TorreBlanca[i]);
+                ventanaJuego.draw(TorreNegra[i]);
+                ventanaJuego.draw(CaballoBlanco[i]);
+                ventanaJuego.draw(CaballoNegro[i]);
+                ventanaJuego.draw(AlfilBlanco[i]);
+                ventanaJuego.draw(AlfilNegro[i]);
+            }
+
+            // Dibujar la reina
+            ventanaJuego.draw(ReinaBlanca);
+            ventanaJuego.draw(ReinaNegra);
+
+            // Dibujar el rey
+            ventanaJuego.draw(ReyBlanco);
+            ventanaJuego.draw(ReyNegro);
+
+            ventanaJuego.draw(botonExitGame);
+            ventanaJuego.draw(textoTurno);
+
+            ventanaJuego.display();
+        }
+    }
+    return 0;
+}
