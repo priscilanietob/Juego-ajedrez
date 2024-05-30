@@ -7,7 +7,7 @@ class Tablero {
     int columna;
     int renglon;
     enum Color { Blanca, Negra };
-    Color turnoActual = Color::Blanca;
+    bool turnoActual = true;
 
 public:
     Tablero() {}
@@ -32,9 +32,18 @@ public:
         return (turnoActual == true) ? "Blanco" : "Negro";
     }
 
-    void displayTurno()
+    void displayTurno() 
     {
-        cout << "Turno de: " << getTurnoATexto() << endl;
+        if (turnoActual == true)
+        {
+            cout << "Turno de Negras" << endl;
+            turnoActual = !turnoActual;
+        }
+        else
+        {
+            cout << "Turno de Blancas" << endl;
+            turnoActual = !turnoActual;
+        }
  
     }
 };
@@ -615,6 +624,8 @@ int main()
                         ventanaMenu.setVisible(false);
                         ventanaJuego.setVisible(true);
                         Menu = false;
+                        cout << "Turno de Blancas " << endl;
+
                     }
                     if (botonExit.getGlobalBounds().contains(mousePos))
                     {
@@ -655,16 +666,18 @@ int main()
                             MoverReinaB = true;
                             dx = pos.x - ReinaBlanca.getPosition().x;
                             dy = pos.y - ReinaBlanca.getPosition().y;
-                            tablero.displayTurno();
                             turnoActual = !turnoActual;
+                            tablero.displayTurno();
+                            
                         }
                         if (ReinaNegra.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                         {
                             MoverReinaN = true;
                             dx = pos.x - ReinaNegra.getPosition().x;
                             dy = pos.y - ReinaNegra.getPosition().y;
-                            tablero.displayTurno();
                             turnoActual = !turnoActual;
+                            tablero.displayTurno();
+                            
                         }          
                         for(int i = 0; i < 8; i++)
                         {
@@ -673,8 +686,8 @@ int main()
                                 MoverPeonB[i] = true;
                                 dx = pos.x - peonesBlancos[i].getPosition().x;
                                 dy = pos.y - peonesBlancos[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
                             }
                         }       
                         for(int i = 0; i < 8; i++)
@@ -684,8 +697,9 @@ int main()
                                 MoverPeonN[i] = true;
                                 dx = pos.x - peonesNegros[i].getPosition().x;
                                 dy = pos.y - peonesNegros[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+
                             }
                         }
                         if (ReyNegro.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
@@ -693,16 +707,18 @@ int main()
                             MoverReyN = true;
                             dx = pos.x - ReyNegro.getPosition().x;
                             dy = pos.y - ReyNegro.getPosition().y;
-                            tablero.displayTurno();
                             turnoActual = !turnoActual;
+                            tablero.displayTurno();
+                            
                         }
                         if (ReyBlanco.getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
                         {
                             MoverReyB = true;
                             dx = pos.x - ReyBlanco.getPosition().x;
                             dy = pos.y - ReyBlanco.getPosition().y;
-                            tablero.displayTurno();
                             turnoActual = !turnoActual;
+                            tablero.displayTurno();
+                            
                         }   
                         for(int i = 0; i < 2; i++)
                         {
@@ -711,48 +727,54 @@ int main()
                                 MoverCaballoB[i] = true;
                                 dx = pos.x - CaballoBlanco[i].getPosition().x;
                                 dy = pos.y - CaballoBlanco[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+                                
                             }
                             if (CaballoNegro[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                             {
                                 MoverCaballoN[i] = true;
                                 dx = pos.x - CaballoNegro[i].getPosition().x;
                                 dy = pos.y - CaballoNegro[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+                                
                             }       
                             if (AlfilBlanco[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
                             {
                                 MoverAlfilB[i] = true;
                                 dx = pos.x - AlfilBlanco[i].getPosition().x;
                                 dy = pos.y - AlfilBlanco[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+                                
                             }                 
                             if (AlfilNegro[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                             {
                                 MoverAlfilN[i] = true;
                                 dx = pos.x - AlfilNegro[i].getPosition().x;
                                 dy = pos.y - AlfilNegro[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+                                
                             }     
                             if (TorreBlanca[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == true)
                             {
                                 MoverTorreB[i] = true;
                                 dx = pos.x - TorreBlanca[i].getPosition().x;
-                                dy = pos.y - TorreBlanca[i].getPosition().y;
-                                tablero.displayTurno();
+                                dy = pos.y - TorreBlanca[i].getPosition().y;   
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+                                
                             }   
                             if (TorreNegra[i].getGlobalBounds().contains(pos.x, pos.y) && turnoActual == false)
                             {
                                 MoverTorreN[i] = true;
                                 dx = pos.x - TorreNegra[i].getPosition().x;
                                 dy = pos.y - TorreNegra[i].getPosition().y;
-                                tablero.displayTurno();
                                 turnoActual = !turnoActual;
+                                tablero.displayTurno();
+                                
                             }
                         
                         }
@@ -803,7 +825,7 @@ int main()
             {
                 ReinaNegra.setPosition(pos.x - dx, pos.y - dy);
             }  
-            int col_inicial[8], ren_inicial = 2, col_final[8], ren_final[8];
+            //int col_inicial[8], ren_inicial = 2, col_final[8], ren_final[8];
 
             for(int i = 0; i < 8; i++)
             { 
