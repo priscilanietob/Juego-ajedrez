@@ -4,6 +4,8 @@
 using namespace std;
 using namespace sf;
 
+class tableroo;
+
 class Tablero {
     int columna;
     int renglon;
@@ -14,6 +16,9 @@ public:
     Tablero() {}
     ~Tablero() {}
 
+    //funcion de registro de jugadas
+
+    //funcion de cambio de turno
     void cambiarTurno()
     {
         if (turnoActual == Color::Blanca)
@@ -48,7 +53,6 @@ public:
 
     Color color;
     Tipo tipo;
-    Tablero* tablero;
 
     //constructor y destructor
     Pieza(Color _color, Tipo _tipo) :
@@ -56,8 +60,8 @@ public:
     ~Pieza() {}
 
     //gets
-    Color getColor() const { return static_cast<Color>(color); }
-    Tipo getTipo() const { return static_cast<Tipo>(tipo); }
+    char getColor()const { return color; }
+    char getTipo()const { return tipo; }
 
     //movimientos invalidos para cualquier pieza
     bool dentroTablero(int col_inicial, int ren_inicial, int col_final, int ren_final) {
@@ -70,61 +74,26 @@ public:
         }
     }
 
-    bool esJaque(Pieza::Color color) {
-        // Buscar el rey del color especificado
-        Pieza* rey = nullptr;
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                if (tablero[i][j] && tablero[i][j]->getTipo() == Pieza::Rey && tablero[i][j]->getColor() == color) {
-                    rey = tablero[i][j];
-                    break;
-                }
-            }
-        }
-        if (!rey) return false;
-
-        // Verificar si alguna pieza contraria puede capturar al rey
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                if (tablero[i][j] && tablero[i][j]->getColor() != color) {
-                    if (tablero[i][j]->puedeMoverse(rey->columna, rey->renglon, tablero)) {
-                        return true;
-                    }
-                }
-            }
-        }
+    bool esJaque() {
+        //revisar si esta en jaque
         return false;
     }
 
-    bool esJaquemate(Pieza::Color color) {
-        // Verificar si hay alguna jugada posible para evitar el jaque
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                if (tablero[i][j] && tablero[i][j]->getColor() == color) {
-                    for (int k = 0; k < 8; ++k) {
-                        for (int l = 0; l < 8; ++l) {
-                            if (tablero[i][j]->puedeMoverse(k, l, tablero)) {
-                                Pieza* piezaTemporal = tablero[k][l];
-                                tablero[k][l] = tablero[i][j];
-                                tablero[i][j] = nullptr;
-                                if (!estaEnJaque(color)) {
-                                    tablero[i][j] = tablero[k][l];
-                                    tablero[k][l] = piezaTemporal;
-                                    return false;
-                                }
-                                tablero[i][j] = tablero[k][l];
-                                tablero[k][l] = piezaTemporal;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return true;
+    bool esJaquemate() {
+        //revisar si esta en jaque mate
+        return false;
     }
 
     bool casillaOcupada(Pieza* tablero[8][8], int col, int ren) const {
         return tablero[col - 1][ren - 1] != nullptr; //se le quita uno por lo de los indices
+    }
+
+    //casilla ocupada por otro color
+    bool casillaOcupadaOponente(Pieza* tablero[8][8], int col, int ren, Color miColor) const {
+        if (tablero[col-1][ren-1] != nullptr) {
+            return tablero[col-1][ren-1]->color != miColor;
+        }
+        return false;
     }
 
     void actualizarPosicion(int col_inicial, int ren_inicial, int col_final, int ren_final) {
@@ -132,6 +101,63 @@ public:
         ren_inicial = ren_final;
     }
 
+     bool puedeMoverse(int col_inicial, int ren_inicial, int col_final, int ren_final)
+     {
+         return true;
+     }
+};
+
+class tableroo {
+public:
+    unique_ptr<Pieza> tablero[8][8];
+
+    tableroo() {
+        // Inicializar el tablero con nullptr
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                tablero[i][j] = nullptr;
+            }
+        }
+    }
+
+    Pieza* obtenerPieza(int col, int ren) const {
+        return tablero[col][ren].get();
+    }
+
+    void colocarPieza(int col, int ren, unique_ptr<Pieza> pieza) {
+        tablero[col][ren] = move(pieza);
+    }
+
+    bool estaEnJaque(Pieza::Color color) {
+        int rey_col = -1, rey_ren = -1;
+
+        // Buscar el rey del color especificado
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                Pieza* pieza = obtenerPieza(i, j);
+                if (pieza && pieza->getTipo() == Pieza::Rey && pieza->getColor() == color) {
+                    rey_col = i;
+                    rey_ren = j;
+                    break;
+                }
+            }
+            if (rey_col != -1) break;
+        }
+        if (rey_col == -1) return false;
+
+        // Verificar si alguna pieza contraria puede capturar al rey
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
+                Pieza* pieza = obtenerPieza(i, j);
+                if (pieza && pieza->getColor() != color) {
+                    if (pieza->puedeMoverse(i, j, rey_col, rey_ren)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 };
 
 class Peon : public Pieza {
@@ -170,40 +196,64 @@ public:
     }
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
-
         //revisar que no este en jaque/mate y q se mueva dentro del tablero Y q no este ocupada la casilla
-        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && !(Pieza::casillaOcupada(tablero, col_final, ren_final))) {
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) { // && !(Pieza::casillaOcupada(tablero, col_final, ren_final))
 
-            //q se mueva solo uno hacia en frente
-            if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
-                cout << "El peon blanco se movio una casilla hacia en frente." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-                    //codigo
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                //peon blnaco
+                if(col_inicial == col_final+1 && ren_inicial == ren_final+1 || ren_inicial == ren_final-1) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El peón blanco capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                } else if (col_inicial == col_final-1 && ren_inicial == ren_final+1 || ren_inicial == ren_final-1) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El peón negro capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
             }
-            else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == Color::Negra) {
-                cout << "El peon negro se movio una casilla hacia en frente." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-                    //codigo
 
-            //q avance dos casillas cuando esta en posicion inicial
-            }
-            else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == Color::Blanca) {
-                cout << "El peon blanco se movio dos casillas hacia en frente." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-                    //codigo
+            //JUGADA REGULAR
+            else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)) { //que este vacua la casilla
+                //q se mueva solo uno hacia en frente
+                if (col_final == col_inicial && ren_final == ren_inicial + 1 && color == Color::Blanca) {
+                    cout << "El peon blanco se movio una casilla hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+                else if (col_final == col_inicial && ren_final == ren_inicial - 1 && color == Color::Negra) {
+                    cout << "El peon negro se movio una casilla hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
 
-            }
-            else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == Color::Negra) {
-                cout << "El peon negro se movio dos casillas hacia en frente." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-                    //codigo
-            }
-            else {
-                cout << "Jugada invalida." << endl;
+                //q avance dos casillas cuando esta en posicion inicial
+                }
+                else if (ren_inicial == 2 && ren_final == 4 && col_inicial == col_final && color == Color::Blanca) {
+                    cout << "El peon blanco se movio dos casillas hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+
+                }
+                else if (ren_inicial == 7 && ren_final == 5 && col_inicial == col_final && color == Color::Negra) {
+                    cout << "El peon negro se movio dos casillas hacia en frente." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
             }
         }
         else {
@@ -237,19 +287,35 @@ public:
     }
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
-        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && !(Pieza::casillaOcupada(tablero, col_final, ren_final))) {
-            if ((col_final == col_inicial - 1 || col_inicial + 1) && (ren_final == ren_inicial + 2 || ren_final == ren_inicial - 2)) {
-                cout << "El caballo se movio hacia el norte o el sur." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-            }
-            else if ((ren_final == ren_inicial - 1 || ren_inicial + 1) && (col_final == col_inicial + 2 || col_final == col_inicial - 2)) {
-                cout << "El caballo se movio al este u oeste." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-            }
-            else {
-                cout << "Jugada invalida." << endl;
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if(puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El caballo capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+            //JUGADA NORMAL
+            } else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)){
+                if ((col_final == col_inicial - 1 || col_inicial + 1) && (ren_final == ren_inicial + 2 || ren_final == ren_inicial - 2)) {
+                    cout << "El caballo se movio hacia el norte o el sur." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else if ((ren_final == ren_inicial - 1 || ren_inicial + 1) && (col_final == col_inicial + 2 || col_final == col_inicial - 2)) {
+                    cout << "El caballo se movio al este u oeste." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
             }
         }
         else {
@@ -306,18 +372,34 @@ public:
             columnaDiff = columnaDiff * (-1);
         }
 
-        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && !(Pieza::casillaOcupada(tablero, col_final, ren_final))) {
-            if (columnaDiff == renglonDiff) {
-                cout << "El alfil se movio." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if(puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El alfil capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+            //JUGADA NORMAL
+            } else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)){
+                if (columnaDiff == renglonDiff) {
+                    cout << "El alfil se movio." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
             }
-            else {
-                cout << "Jugada invalida." << endl;
-            }
-        }
         else {
             cout << "Jugada invalida." << endl;
+        }
         }
     }
 };
@@ -347,14 +429,31 @@ public:
 
     void mover(int col_inicial, int ren_inicial, int col_final, int ren_final, Pieza* tablero[8][8]) {
         //reglas de movimiento especificas de la tore
-        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && !(Pieza::casillaOcupada(tablero, col_final, ren_final))) {
-            if (col_inicial == col_final || ren_inicial == ren_final) {
-                cout << "La torre se movio." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-            }
-            else {
-                cout << "Jugada invalida." << endl;
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if(puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "La torre capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+            //JUGADA NORMAL
+            } else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)){
+                //juagda normal
+                if (col_inicial == col_final || ren_inicial == ren_final) {
+                    cout << "La torre se movio." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
             }
         }
         else {
@@ -408,19 +507,36 @@ public:
         }
 
         //reglas de movimiento especificas de la dama
-        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && !(Pieza::casillaOcupada(tablero, col_final, ren_final))) {
-            if (columnaDiff == renglonDiff) {
-                cout << "La dama se movio en diagonal." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-            }
-            else if (col_inicial == col_final || ren_inicial == ren_final) {
-                cout << "La dama se movio en horizontal o vertical." << endl;
-                Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                //cambio turno
-            }
-            else {
-                cout << "Jugada invalida." << endl;
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if(puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "La dama capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                        //codigo
+                }
+
+            //JUGADA NORMAL
+            } else if (!Pieza::casillaOcupada(tablero, col_final, ren_final)){
+                //jugada normal
+                if (columnaDiff == renglonDiff) {
+                    cout << "La dama se movio en diagonal." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else if (col_inicial == col_final || ren_inicial == ren_final) {
+                    cout << "La dama se movio en horizontal o vertical." << endl;
+                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                    //cambio turno
+                }
+                else {
+                    cout << "Jugada invalida." << endl;
+                }
             }
         }
         else {
@@ -446,7 +562,7 @@ public:
             columnaDiff = columnaDiff * (-1);
         }
 
-        //reglas de movimiento especificas de la dama
+        //reglas de movimiento especificas del rey
         if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
             if (columnaDiff <= 1 && renglonDiff <= 1) { //se asegura que solo se mueva una casilla
                 if (columnaDiff == renglonDiff) {
@@ -478,23 +594,39 @@ public:
             columnaDiff = columnaDiff * (-1);
         }
 
-        //reglas de movimiento especificas de la dama
-        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate()) && !(Pieza::casillaOcupada(tablero, col_final, ren_final))) {
-            if (columnaDiff <= 1 && renglonDiff <= 1) { //se asegura que solo se mueva una casilla
-                if (columnaDiff == renglonDiff) {
-                    cout << "El rey se movio en alguna diagonal." << endl;
+        //reglas de movimiento especificas del rey
+        if (Pieza::dentroTablero(col_inicial, ren_inicial, col_final, ren_final) && (!esJaque()) && (!esJaquemate())) {
+
+            //CAPTURA DE PIEZA
+            if (casillaOcupadaOponente(tablero, col_final, ren_final, color)) { //si la casilla esta ocupada por el oponente
+                if(puedeMoverse(col_inicial, ren_inicial, col_final, ren_final)) {
+                    Pieza* pieza_enemiga = tablero[col_final][ren_final];
+                    cout << "El rey capturó una pieza." << endl;
+                    delete pieza_enemiga;
+                    tablero[col_final][ren_final] = nullptr;
                     Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
                     //cambio turno
+                        //codigo
                 }
-                else if (col_inicial == col_final || ren_inicial == ren_final) {
-                    cout << "El rey se movio en horizontal o vertical." << endl;
-                    Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
-                    //cambio turno
+
+            //JUGADA NORMAL
+            } else if (!Pieza::casillaOcupada(tablero, col_final, ren_final))
+                //jugada normal
+                if (columnaDiff <= 1 && renglonDiff <= 1) { //se asegura que solo se mueva una casilla
+                    if (columnaDiff == renglonDiff) {
+                        cout << "El rey se movio en alguna diagonal." << endl;
+                        Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                        //cambio turno
+                    }
+                    else if (col_inicial == col_final || ren_inicial == ren_final) {
+                        cout << "El rey se movio en horizontal o vertical." << endl;
+                        Pieza::actualizarPosicion(col_inicial, ren_inicial, col_final, ren_final);
+                        //cambio turno
+                    }
+                    else {
+                        cout << "Jugada invalida." << endl;
+                    }
                 }
-                else {
-                    cout << "Jugada invalida." << endl;
-                }
-            }
             else {
                 cout << "Jugada invalida." << endl;
             }
@@ -518,7 +650,7 @@ bool cargarTextura(Texture& textura, const string& archivo) {
 int tamanioTablero = 56;
 Sprite piezas[32];
 
-/*int tablero[8][8] =  //Representacion de las piezas como un valor
+int tablero[8][8] =  //Representacion de las piezas como un valor
 { -1, -2, -3, -5, -4, -3, -2, -1, // Piezas blancas num positivos y negras negativos
   -6, -6, -6, -6, -6, -6, -6, -6, // Peones = 6
    0,  0,  0,  0,  0,  0,  0,  0, // Torre = 1
@@ -527,7 +659,14 @@ Sprite piezas[32];
    0,  0,  0,  0,  0,  0,  0,  0, // Dama = 4
    6,  6,  6,  6,  6,  6,  6,  6, // Rey = 5
    1,  2,  3,  4,  5,  3,  2,  1, // Celda vacia = 0
-};*/
+};
+
+Vector2i mouseACoordenadas(Vector2i posMouse) {
+        int tableroX = posMouse.x / 100;
+        int tableroY = posMouse.y / 100;
+        return Vector2i(tableroX, tableroY);
+    }
+
 
 int main()
 {
@@ -553,7 +692,8 @@ int main()
     cargarTextura(texturaExit, "Exit_resized.png");
 
     Sprite spriteFondo(texturaFondo); //Crear el sprite del fondo
-    spriteFondo.setScale((float)ventanaMenu.getSize().x / spriteFondo.getTexture()->getSize().x, (float)ventanaMenu.getSize().y / spriteFondo.getTexture()->getSize().y); //Ajusta el tamaño del sprite del fondo a la ventana
+    spriteFondo.setScale(
+        (float)ventanaMenu.getSize().x / spriteFondo.getTexture()->getSize().x, (float)ventanaMenu.getSize().y / spriteFondo.getTexture()->getSize().y); //Ajusta el tamaño del sprite del fondo a la ventana
     Sprite play(texturaPlay), settings(texturaSettings), exit(texturaExit); //Posición de las texturas de botones (debe ser la misma que de los botones)
     play.setPosition(100, 50);
     settings.setPosition(100, 150);
@@ -699,6 +839,7 @@ int main()
                     if (event.mouseButton.button == Mouse::Left)
                     {
                         Vector2i pos = Mouse::getPosition(ventanaJuego);
+                        Vector2i posTablero = mouseACoordenadas(pos);
                         if (botonExitGame.getGlobalBounds().contains(pos.x, pos.y))
                         {
                             ventanaJuego.setVisible(false);
